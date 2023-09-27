@@ -158,7 +158,7 @@ struct ListaProducto{
 
 Producto * separarProductoCadena(string cadena){
     string texto;
-    string datos[5] = {"", "", "", ""};
+    string datos[5] = {"", "", "", "", ""};
     for (int i = 0; i < cadena.length(); i++){
         if (cadena[i] != '\t') 
             texto += cadena[i];
@@ -181,26 +181,20 @@ ListaProducto * cargarProductos(){
         cout << "Error archivo" << endl;
         return NULL;
     }
-    string line;
-
-    while (getline( archivo, line)) {
-        cout << line << endl;
-        cout << "Hello" << '\t' << "Bye" << endl;
-    }
     string linea;
     ListaProducto * lista = new ListaProducto();
 
     while (getline( archivo, linea)) {
         lista->insertarFinal(separarProductoCadena(linea));
     }
-    archivo.close();
-    return lista;
+     archivo.close();
+     return lista;
 }
 
 void actualizarArchivoProductos(ListaProducto * lista){
     ofstream archivo("Productos.txt");
     if (!archivo.is_open()) {
-        cerr << "No se pudo abrir el archivo" << endl;
+        std::cerr << "No se pudo abrir el archivo" << std::endl;
         return;
     }
     ListaProducto * tmp = lista;
