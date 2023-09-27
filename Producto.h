@@ -177,6 +177,7 @@ Producto * separarProductoCadena(string cadena){
 
 ListaProducto * cargarProductos(){
     ifstream archivo("Productos.txt");
+    //ListaProducto * lista = new ListaProducto();
     if (!archivo.is_open()) {
         cout << "Error archivo" << endl;
         return NULL;
@@ -198,7 +199,6 @@ void actualizarArchivoProductos(ListaProducto * lista){
         return;
     }
     ListaProducto * tmp = lista;
-
     bool listaLlena = true;
     while (listaLlena){
         tmp->primerNodo->imprimir();

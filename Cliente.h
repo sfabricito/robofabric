@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <thread>
 
+namespace fs = std::filesystem;
 using namespace std;
 
 struct Cliente{
