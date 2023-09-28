@@ -47,7 +47,7 @@ void revisarPedido(string _archivo,ListaCliente * listaCliente,ListaProducto * l
         cout << "ruta nueva:  " << rutaNueva.c_str() << endl;
         if (!listaCliente->buscarCliente(codigoCliente)){
             cout << "se metio al if" << endl;
-            rename(rutaVieja.c_str(),rutaNueva.c_str());
+            rename("/home/sfabricito/Documents/University/Estructuras_de_Datos/robofabric/Pedidos/pruebas.txt","/home/sfabricito/Documents/University/Estructuras_de_Datos/robofabric/Errores/prueba2.txt");
         }
         vector<string> producto;
         int cantidad;
@@ -56,7 +56,7 @@ void revisarPedido(string _archivo,ListaCliente * listaCliente,ListaProducto * l
             producto = separarProductoDePedido(linea);
             cantidad = stoi(producto[1]);
             if(!listaProducto->buscarProductoPorCodigo(producto[0]) || cantidad < 1){
-                rename(rutaVieja.c_str(),rutaNueva.c_str());
+                rename("/home/sfabricito/Documents/University/Estructuras_de_Datos/robofabric/Pedidos/pruebas.txt","/home/sfabricito/Documents/University/Estructuras_de_Datos/robofabric/Errores/prueba2.txt");
             }   
         }
     }
