@@ -10,6 +10,7 @@ struct ListaProducto;
 Producto * separarProductoCadena(string cadena);
 ListaProducto * cargarProductos();
 void actualizarArchivoProductos(ListaProducto * lista);
+bool existeProductoLista(ListaProducto * lista, Producto * producto);
 
 // Estructuras
 struct Producto{
@@ -157,39 +158,45 @@ struct ListaProducto{
 };
 
 Producto * separarProductoCadena(string cadena){
-    string texto;
-    string datos[5] = {"", "", "", "", ""};
+    string texto1;
+    string datos[5] = {"", "", "", ""};
     for (int i = 0; i < cadena.length(); i++){
         if (cadena[i] != '\t') 
-            texto += cadena[i];
+            texto1 += cadena[i];
         else {
             for (int i = 0; i < 5; i++){
                 if (datos[i] == ""){
-                    datos[i] = texto;
-                    texto = "";
+                    datos[i] = texto1;
+                    texto1 = "";
                 }
             }
         }
     }
-    datos[4] = texto;
+    datos[4] = texto1;
+
     return new Producto(datos[0], stoi(datos[1]), stoi(datos[2]), datos[3], datos[4]);
 }
 
-ListaProducto * cargarProductos(){
+bool cargarProductos(ListaProducto * lista){
     ifstream archivo("Productos.txt");
     //ListaProducto * lista = new ListaProducto();
     if (!archivo.is_open()) {
         cout << "Error archivo" << endl;
-        return NULL;
+        return false;
     }
     string linea;
-    ListaProducto * lista = new ListaProducto();
-
-    while (getline( archivo, linea)) {
-        lista->insertarFinal(separarProductoCadena(linea));
+    while(getline(archivo, linea)) {
+        Producto * producto = separarProductoCadena(linea);
+        if (existeProductoLista(lista, producto))
+            return false;
+        else if (producto->cantidadAlmacen < 0)
+            return false;
+        else if (producto->categoria != "A" & producto->categoria != "B" & producto->categoria != "C")
+            return false;
+        lista->insertarFinal(producto);
     }
-     archivo.close();
-     return lista;
+    archivo.close();
+    return true;
 }
 
 void actualizarArchivoProductos(ListaProducto * lista){
@@ -214,4 +221,19 @@ void actualizarArchivoProductos(ListaProducto * lista){
             listaLlena = false;
     }
     archivo.close();
+}
+
+bool existeProductoLista(ListaProducto * lista, Producto * producto){
+    if (lista->isEmpty())
+        return false;
+    NodoProducto * tmp = lista->primerNodo;
+    bool listaLlena = true;
+    while (listaLlena){
+        if (tmp->siguiente == NULL)
+            listaLlena = false;
+        else if (tmp->producto->codigo == producto->codigo)
+            return true;
+        tmp = tmp->siguiente;
+    }
+    return false;
 }

@@ -159,7 +159,7 @@ struct Pedido{
             pedidos += tmp->producto->codigoProducto + "\t" + to_string(tmp->producto->cantidadPedida) + "\n";
             tmp = tmp->siguiente;
         }
-        return "Numero pedido: " + to_string(numeroPedido) + "\tCodigo Cliente: " + codigoCliente + "\nPedidos:\n" + pedidos;
+        return "Numero pedido: " + to_string(numeroPedido) + "\tCodigo Cliente: " + codigoCliente + "\nPedidos:\n" + pedidos + "\n";
     }
 
     void agregarProducto(ProductoDePedido * producto){
@@ -214,7 +214,7 @@ struct ListaPedido{//esto va a servir como las colas de nuestros pedidos
 		return primerNodo == NULL;
 	}
 
-    void insertarFinal(Pedido * producto){
+    void encolar(Pedido * producto){
 		if (isEmpty())
 			primerNodo = ultimoNodo = new NodoPedido(producto);
 		else{
@@ -225,7 +225,7 @@ struct ListaPedido{//esto va a servir como las colas de nuestros pedidos
 		}
     }
 
-    NodoPedido * borrarAlInicio(){
+    NodoPedido * desencolar(){
         NodoPedido * borrado = primerNodo;
         if (primerNodo != NULL){
             if (primerNodo == ultimoNodo)
@@ -308,31 +308,4 @@ void revisarPedido(string _archivo,ListaCliente * listaCliente,ListaProducto * l
     }
 }
 
-Pedido * convertirAPedido(string _archivo){
-    ifstream archivo(_archivo.c_str());
-    if(archivo.is_open()){
-        Pedido * pedido = new Pedido();
-        string cliente,linea;
-        int codigo;
-        getline(archivo,linea);
-        codigo = stoi(linea);
-        getline(archivo,linea);
-        cliente = linea;
-        pedido->codigoCliente = cliente;
-        pedido->numeroPedido = codigo;
-        vector<string> producto;
-        int cantidad;
-        while(getline(archivo,linea)){
-            producto = separarProductoDePedido(linea);
-            cantidad = stoi(producto[1]);
-            //cout << "PRODUCTO:   " << producto[0] << "  CANTIDAD   " << cantidad << endl;
-            //cout << "PRODUCTOOOOOOOOOOOOO: " << productoDePedido->codigoProducto << "  " <<productoDePedido->cantidadPedida  << endl;
-            pedido->agregarProducto(new ProductoDePedido(producto[0],cantidad,0));
-        }
-        return pedido;
-    }
-    cout << "no se abrio" << endl;
-    archivo.close();
-    return NULL;
-}
 

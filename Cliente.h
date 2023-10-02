@@ -7,6 +7,8 @@
 #include <filesystem>
 #include <thread>
 #include <string>
+#include <atomic>
+#include <mutex>
 
 namespace fs = std::filesystem;
 using namespace std;
@@ -92,6 +94,16 @@ struct ListaCliente{
 			tmp = tmp->sig; 		
 		}
 		return false;
+	}
+
+	int getPrioridad(string _nombre){
+		NodoCliente * tmp = primerNodo;
+		while (tmp != NULL){
+			if(tmp->cliente->nombre == _nombre)
+				return tmp->cliente->prioridad; 
+			tmp = tmp->sig; 		
+		}
+		return 0;
 	}
 	
 };
