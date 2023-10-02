@@ -1,20 +1,35 @@
 #include "Producto.h"
+void leerArchivosEnCarpeta(string);
+void revisarPedido(string ,ListaCliente *,ListaProducto *);
+vector<string> separarProductoDePedido(string );
+void leerArchivosEnCarpeta(string ,ListaCliente * ,ListaProducto * );
 
-struct productoDePedido{
+
+struct ProductoDePedido{
     // Variables
     string codigoProducto;
-    int cantidadPedida;
-
+    int cantidadPedida, cantidadComprometida;
     // Constructores
-    productoDePedido(string _codigoProducto,int _cantidadPedida){
+    ProductoDePedido(string _codigoProducto,int _cantidadPedida, int _cantidadComprometida){
         codigoProducto = _codigoProducto;
         cantidadPedida = _cantidadPedida;
+        cantidadComprometida = _cantidadComprometida;
     }  
+
+    ProductoDePedido(){
+        codigoProducto = "";
+        cantidadPedida = 0;
+        cantidadComprometida = 0;
+    }  
+
+    string toString(){
+        return "Codigo producto: " + codigoProducto + " Cantidad: " + to_string(cantidadPedida);
+    }
 };
 
 struct NodoProductoDePedido{
     // Variables
-    productoDePedido * producto;
+    ProductoDePedido * producto;
     NodoProductoDePedido * siguiente;
     NodoProductoDePedido * anterior;
 
@@ -25,13 +40,13 @@ struct NodoProductoDePedido{
         anterior = NULL;
     }
 
-    NodoProductoDePedido(productoDePedido * productoP){
+    NodoProductoDePedido(ProductoDePedido * productoP){
         producto = productoP;
         siguiente = NULL;
         anterior = NULL;
     }
 
-    NodoProductoDePedido(productoDePedido * productoP, NodoProductoDePedido * siguienteP, NodoProductoDePedido * anteriorP){
+    NodoProductoDePedido(ProductoDePedido * productoP, NodoProductoDePedido * siguienteP, NodoProductoDePedido * anteriorP){
         producto = productoP;
         siguiente = siguienteP;
         anterior = anteriorP;
@@ -58,27 +73,27 @@ struct ListaProductoDePedido{
 		return primerNodo == NULL;
 	}
 
-    void insertarInicio(productoDePedido * producto){
-        if (isEmpty())
-            primerNodo = ultimoNodo = new NodoProductoDePedido(producto);
-        else{
-            NodoProductoDePedido * nuevo = new NodoProductoDePedido(producto);
-            nuevo->siguiente = primerNodo;
-            primerNodo->anterior = nuevo;
-			primerNodo = nuevo;
-        }
-    }
-
-    void insertarFinal(productoDePedido * producto){
+    void insertarAlInicio (ProductoDePedido * productoPedido){
 		if (isEmpty())
-			primerNodo = ultimoNodo = new NodoProductoDePedido(producto);
+			primerNodo = ultimoNodo = new NodoProductoDePedido (productoPedido);
+		else{
+			NodoProductoDePedido * nuevo = new NodoProductoDePedido(productoPedido);
+			nuevo->siguiente = primerNodo;
+			primerNodo->anterior = nuevo;
+			primerNodo = nuevo;
+		}
+	}
+
+	void insertarAlFinal (ProductoDePedido * producto){
+		if (isEmpty())
+			primerNodo = ultimoNodo = new NodoProductoDePedido (producto);
 		else{
 			NodoProductoDePedido * nuevo = new NodoProductoDePedido(producto);
 			nuevo->anterior = ultimoNodo;
 			ultimoNodo->siguiente = nuevo;
 			ultimoNodo = nuevo;
 		}
-    }
+	}
 
     NodoProductoDePedido * borrarAlInicio(){
         NodoProductoDePedido * borrado = primerNodo;
@@ -118,9 +133,119 @@ struct ListaProductoDePedido{
 };
 
 struct Pedido{
+    // Variables
     string codigoCliente;
     int numeroPedido;
-    ListaProducto * productos;
+    ListaProductoDePedido * productosPedidos;
+
+    // Constructores
+    Pedido(){
+        codigoCliente = "";
+        numeroPedido = 0;
+        productosPedidos = new ListaProductoDePedido();
+    }
+
+    Pedido(string _codigoCliente,int _numeroPedido){
+        codigoCliente = _codigoCliente;
+        numeroPedido = _numeroPedido;
+        productosPedidos = new ListaProductoDePedido();
+    }
+
+    //Metodos
+    string toString(){
+        string pedidos;
+        NodoProductoDePedido * tmp = productosPedidos->primerNodo;
+        while(tmp != NULL){
+            pedidos += tmp->producto->codigoProducto + "\t" + to_string(tmp->producto->cantidadPedida) + "\n";
+            tmp = tmp->siguiente;
+        }
+        return "Numero pedido: " + to_string(numeroPedido) + "\tCodigo Cliente: " + codigoCliente + "\nPedidos:\n" + pedidos;
+    }
+
+    void agregarProducto(ProductoDePedido * producto){
+        productosPedidos->insertarAlFinal(producto);
+    }
+    
+};
+
+struct NodoPedido{
+    // Variables
+    Pedido * pedido;
+    NodoPedido * siguiente;
+    NodoPedido * anterior;
+
+    // Constructores
+    NodoPedido(){
+        pedido = NULL;
+        siguiente = NULL;
+        anterior = NULL;
+    }
+
+    NodoPedido(Pedido * productoP){
+        pedido = productoP;
+        siguiente = NULL;
+        anterior = NULL;
+    }
+
+    NodoPedido(Pedido * productoP, NodoPedido * siguienteP, NodoPedido * anteriorP){
+        pedido = productoP;
+        siguiente = siguienteP;
+        anterior = anteriorP;
+    }
+
+    // Procedimientos
+    void imprimir(){
+        cout << pedido->toString() << endl;
+    }
+};
+
+struct ListaPedido{//esto va a servir como las colas de nuestros pedidos
+    // Variables
+    NodoPedido * primerNodo;
+    NodoPedido * ultimoNodo;
+
+    //Constructores
+    ListaPedido(){
+        primerNodo = ultimoNodo = NULL;
+    }
+
+    // Procedimientos
+    bool isEmpty(){
+		return primerNodo == NULL;
+	}
+
+    void insertarFinal(Pedido * producto){
+		if (isEmpty())
+			primerNodo = ultimoNodo = new NodoPedido(producto);
+		else{
+			NodoPedido * nuevo = new NodoPedido(producto);
+			nuevo->anterior = ultimoNodo;
+			ultimoNodo->siguiente = nuevo;
+			ultimoNodo = nuevo;
+		}
+    }
+
+    NodoPedido * borrarAlInicio(){
+        NodoPedido * borrado = primerNodo;
+        if (primerNodo != NULL){
+            if (primerNodo == ultimoNodo)
+                primerNodo = ultimoNodo = NULL;
+            else{
+                primerNodo = primerNodo->siguiente;
+                borrado ->siguiente = NULL;
+                primerNodo->anterior = NULL;
+            }
+        }
+        return borrado;
+    }
+
+    void imprimir(){
+        NodoPedido * tmp = primerNodo;
+        while (tmp != NULL){
+            tmp->imprimir();
+            tmp = tmp->siguiente;
+        }
+    }
 };
 
 vector<string> separarProductoDePedido(string cadena){
@@ -141,59 +266,73 @@ vector<string> separarProductoDePedido(string cadena){
 			}
 			parte = "";
 		}
-		//cout << "PARTESSSS:     " << parte << endl;
 	} 
 	partes.push_back(parte);	
     return partes;
 }
 
-bool revisarPedido(string _archivo,ListaCliente * listaCliente,ListaProducto * listaProducto){
+void revisarPedido(string _archivo,ListaCliente * listaCliente,ListaProducto * listaProducto){
     string rutaVieja = "Pedidos//";
     rutaVieja += _archivo;
-    cout << "ruta vieja :  " << rutaVieja << endl;
     string rutaNueva = "Errores//";
     rutaNueva += _archivo;
+    string rutaBuena = "Procesados//";
+    rutaBuena += _archivo;
     ifstream archivo(rutaVieja.c_str());
     if(archivo.is_open()){
         string linea;
         getline(archivo,linea);
-        cout << "linea 1 :  " << rutaVieja << endl;
         getline(archivo,linea);
         string codigoCliente = linea;
-        cout << "ruta nueva:  " << rutaNueva.c_str() << endl;
-        if (!listaCliente->buscarCliente(codigoCliente))
-            return false;
-        
+        if (!listaCliente->buscarCliente(codigoCliente)){
+            archivo.close();
+            rename(rutaVieja.c_str(),rutaNueva.c_str());
+            return;
+        }
         vector<string> producto;
         int cantidad;
         while (getline(archivo,linea)){
-            cout << "esta en while" << endl;
             producto = separarProductoDePedido(linea);
             cantidad = stoi(producto[1]);
-            if(!listaProducto->buscarProductoPorCodigo(producto[0]) || cantidad < 1)
-                return false;
+            if(!listaProducto->buscarProductoPorCodigo(producto[0]) || cantidad < 1){
+                archivo.close();
+                rename(rutaVieja.c_str(),rutaNueva.c_str());
+                return;
+            }
         }
-    } else return false;
-    return true;
+        archivo.close();
+        rename(rutaVieja.c_str(),rutaBuena.c_str());
+    } else {
+        cout << "no se abrio" << endl;
+        return;
+    }
 }
 
 Pedido * convertirAPedido(string _archivo){
     ifstream archivo(_archivo.c_str());
     if(archivo.is_open()){
-
-    }
-
-}
-
-struct threadLeerArchivo{
-    
-};
-
-void leerArchivosEnCarpeta(string rutaCarpeta) {
-    for (const auto& archivo : fs::directory_iterator(rutaCarpeta)) {
-        if (fs::is_regular_file(archivo)) {
-            cout << archivo.path().filename() << endl;
+        Pedido * pedido = new Pedido();
+        string cliente,linea;
+        int codigo;
+        getline(archivo,linea);
+        codigo = stoi(linea);
+        getline(archivo,linea);
+        cliente = linea;
+        pedido->codigoCliente = cliente;
+        pedido->numeroPedido = codigo;
+        vector<string> producto;
+        int cantidad;
+        while(getline(archivo,linea)){
+            producto = separarProductoDePedido(linea);
+            cantidad = stoi(producto[1]);
+            //cout << "PRODUCTO:   " << producto[0] << "  CANTIDAD   " << cantidad << endl;
+            //cout << "PRODUCTOOOOOOOOOOOOO: " << productoDePedido->codigoProducto << "  " <<productoDePedido->cantidadPedida  << endl;
+            pedido->agregarProducto(new ProductoDePedido(producto[0],cantidad,0));
         }
+        return pedido;
     }
-    
+    cout << "no se abrio" << endl;
+    archivo.close();
+    return NULL;
 }
+
