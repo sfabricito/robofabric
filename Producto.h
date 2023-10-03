@@ -172,6 +172,7 @@ Producto * separarProductoCadena(string cadena){
 
 bool cargarProductos(ListaProducto * lista){
     ifstream archivo("Productos.txt");
+    //ListaProducto * lista = new ListaProducto();
     if (!archivo.is_open()) {
         cout << "Error archivo" << endl;
         return false;
