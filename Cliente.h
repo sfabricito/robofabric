@@ -99,7 +99,7 @@ struct ListaCliente{
 	int getPrioridad(string _nombre){
 		NodoCliente * tmp = primerNodo;
 		while (tmp != NULL){
-			if(tmp->cliente->nombre == _nombre)
+			if(tmp->cliente->codigo == _nombre)
 				return tmp->cliente->prioridad; 
 			tmp = tmp->sig; 		
 		}

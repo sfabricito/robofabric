@@ -159,7 +159,7 @@ struct Pedido{
             pedidos += tmp->producto->codigoProducto + "\t" + to_string(tmp->producto->cantidadPedida) + "\n";
             tmp = tmp->siguiente;
         }
-        return "Numero pedido: " + to_string(numeroPedido) + "\tCodigo Cliente: " + codigoCliente + "\nPedidos:\n" + pedidos + "\n";
+        return "Numero pedido: " + to_string(numeroPedido) + "\tCodigo Cliente: " + codigoCliente + "\nPedidos:\n" + pedidos;
     }
 
     void agregarProducto(ProductoDePedido * producto){
@@ -307,5 +307,3 @@ void revisarPedido(string _archivo,ListaCliente * listaCliente,ListaProducto * l
         return;
     }
 }
-
-

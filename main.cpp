@@ -2,19 +2,35 @@
 #include "ThreadConvertirPedido.h"
 
 int main(){
-    ListaCliente * l1 = new ListaCliente();
-    ListaProducto * l2 = new ListaProducto(); 
-    //ListaPedido * alta, * media,* baja;
-    cargarProductos(l2);
-    cargarClientes(l1);
-    //threadLeerArchivo myThread(l2, l1);
+    ListaCliente * clientes = new ListaCliente();
+    ListaProducto * productos = new ListaProducto(); 
+    ListaPedido * alta = new ListaPedido();
+    ListaPedido * media = new ListaPedido();
+    ListaPedido * baja = new ListaPedido();
+    cargarProductos(productos);
+    cargarClientes(clientes);
+    //clientes->imprimir();
+    //threadLeerArchivo myThread(productos,clientes);
     //myThread.thread.join();
-    Pedido * p1 = convertirAPedido("Procesados//prueba.txt");
-    cout << p1->toString() << endl;
-    leerArchivosEnCarpeta2("Procesados");
-    //ThreadConvertirPedido thread(l1,alta,media,baja);
+    //myThread.stop();
     
-    //thread.thread.join();
     
+    //Pedido * p1 = convertirAPedido("Procesados//prueba.txt");
+    //convertirPedidosDeCarpeta("Procesados",alta,media,baja,clientes);
+    //cout << "baja:   " << endl;
+    //baja->imprimir();
+    ThreadConvertirPedido thread(clientes,alta,media,baja);
+    thread.Reanudar();
+    // Esperar un tiempo antes de terminar el thread (por ejemplo, después de 5 segundos)
+    std::this_thread::sleep_for(std::chrono::seconds(5));
+    // Terminar el thread
+    thread.Terminar();
+
+    cout << "media:   " << endl;
+    media->imprimir();
+    cout << "baja:   " << endl;
+    baja->imprimir();
+    
+
     return 0;
 } 
