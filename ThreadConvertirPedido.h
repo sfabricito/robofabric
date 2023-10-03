@@ -4,7 +4,7 @@ Pedido * convertirAPedido(string);
 void convertirPedidosDeCarpeta(string ,ListaPedido * ,ListaPedido * ,ListaPedido * ,ListaCliente *);
 
 struct ThreadConvertirPedido {
-    thread thread; // El objeto thread
+    std::thread thread; // El objeto thread
 
     bool running = false,paused = false;
     ListaPedido * prioridadAlta, * prioridadMedia,* prioridadBaja;
