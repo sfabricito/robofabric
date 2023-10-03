@@ -10,8 +10,7 @@ struct ListaProducto;
 Producto * separarProductoCadena(string cadena);
 ListaProducto * cargarProductos();
 void actualizarArchivoProductos(ListaProducto * lista);
-bool existeProductoLista(ListaProducto * lista, Producto * producto);
-
+bool verificarFormatoProducto(Producto * producto);
 // Estructuras
 struct Producto{
     // Variables
@@ -87,7 +86,7 @@ struct ListaProducto{
 		return primerNodo == NULL;
 	}
 
-    void insertarInicio(Producto * producto){
+    NodoProducto * insertarInicio(Producto * producto){
         if (isEmpty())
             primerNodo = ultimoNodo = new NodoProducto(producto);
         else{
@@ -96,9 +95,10 @@ struct ListaProducto{
             primerNodo->anterior = nuevo;
 			primerNodo = nuevo;
         }
+        return primerNodo;
     }
 
-    void insertarFinal(Producto * producto){
+    NodoProducto * insertarFinal(Producto * producto){
 		if (isEmpty())
 			primerNodo = ultimoNodo = new NodoProducto(producto);
 		else{
@@ -107,6 +107,7 @@ struct ListaProducto{
 			ultimoNodo->siguiente = nuevo;
 			ultimoNodo = nuevo;
 		}
+        return ultimoNodo;
     }
 
     NodoProducto * borrarAlInicio(){
@@ -137,6 +138,16 @@ struct ListaProducto{
         return borrado;
     }
 
+    NodoProducto * buscarProductoPorCodigo(string codigo){
+        NodoProducto * tmp = primerNodo;
+        while (tmp != NULL){
+            if(tmp->producto->codigo == codigo)
+                return tmp;
+            tmp = tmp->siguiente;
+        }
+        return tmp;
+    }
+
     void imprimir(){
         NodoProducto * tmp = primerNodo;
         while (tmp != NULL)
@@ -145,35 +156,17 @@ struct ListaProducto{
             tmp = tmp->siguiente;
         }
     }
-
-    bool buscarProductoPorCodigo(string _codigo){
-        NodoProducto * tmp = primerNodo;
-        while (tmp != NULL){
-            if(tmp->producto->codigo == _codigo)
-                return true;
-            tmp = tmp->siguiente;
-        }
-        return false;
-    }
 };
 
 Producto * separarProductoCadena(string cadena){
-    string texto1;
-    string datos[5] = {"", "", "", ""};
+    int dato = 0;
+    string datos[5];
     for (int i = 0; i < cadena.length(); i++){
-        if (cadena[i] != '\t') 
-            texto1 += cadena[i];
-        else {
-            for (int i = 0; i < 5; i++){
-                if (datos[i] == ""){
-                    datos[i] = texto1;
-                    texto1 = "";
-                }
-            }
-        }
+        if (cadena[i] != '\t')
+            datos[dato] += cadena[i];
+        else 
+            dato++;
     }
-    datos[4] = texto1;
-
     return new Producto(datos[0], stoi(datos[1]), stoi(datos[2]), datos[3], datos[4]);
 }
 
@@ -185,14 +178,13 @@ bool cargarProductos(ListaProducto * lista){
         return false;
     }
     string linea;
+    
     while(getline(archivo, linea)) {
         Producto * producto = separarProductoCadena(linea);
-        if (existeProductoLista(lista, producto))
+        if (!verificarFormatoProducto(producto))
             return false;
-        else if (producto->cantidadAlmacen < 0)
-            return false;
-        else if (producto->categoria != "A" & producto->categoria != "B" & producto->categoria != "C")
-            return false;
+        else if (lista->buscarProductoPorCodigo(producto->codigo) != NULL)
+            return false;  
         lista->insertarFinal(producto);
     }
     archivo.close();
@@ -202,9 +194,10 @@ bool cargarProductos(ListaProducto * lista){
 void actualizarArchivoProductos(ListaProducto * lista){
     ofstream archivo("Productos.txt");
     if (!archivo.is_open()) {
-        std::cerr << "No se pudo abrir el archivo" << std::endl;
+        cout << "No se pudo abrir el archivo" << endl;
         return;
     }
+    
     ListaProducto * tmp = lista;
     bool listaLlena = true;
     while (listaLlena){
@@ -223,17 +216,10 @@ void actualizarArchivoProductos(ListaProducto * lista){
     archivo.close();
 }
 
-bool existeProductoLista(ListaProducto * lista, Producto * producto){
-    if (lista->isEmpty())
+bool verificarFormatoProducto(Producto * producto){
+    if (producto->cantidadAlmacen < 0)
         return false;
-    NodoProducto * tmp = lista->primerNodo;
-    bool listaLlena = true;
-    while (listaLlena){
-        if (tmp->siguiente == NULL)
-            listaLlena = false;
-        else if (tmp->producto->codigo == producto->codigo)
-            return true;
-        tmp = tmp->siguiente;
-    }
-    return false;
+    else if (producto->categoria != "A" & producto->categoria != "B" & producto->categoria != "C")
+        return false;
+    return true;
 }
