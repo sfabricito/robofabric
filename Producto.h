@@ -138,14 +138,14 @@ struct ListaProducto{
         return borrado;
     }
 
-    NodoProducto * buscarProductoPorCodigo(string codigo){
+    NodoProducto * buscarProductoPorCodigo(string _codigo){
         NodoProducto * tmp = primerNodo;
         while (tmp != NULL){
-            if(tmp->producto->codigo == codigo)
+            if(tmp->producto->codigo == _codigo)
                 return tmp;
             tmp = tmp->siguiente;
         }
-        return tmp;
+        return NULL;
     }
 
     void imprimir(){
@@ -197,21 +197,14 @@ void actualizarArchivoProductos(ListaProducto * lista){
         cout << "No se pudo abrir el archivo" << endl;
         return;
     }
-    
-    ListaProducto * tmp = lista;
-    bool listaLlena = true;
-    while (listaLlena){
-        tmp->primerNodo->imprimir();
-        archivo << tmp->primerNodo->producto->codigo << '\t';
-        archivo << tmp->primerNodo->producto->cantidadAlmacen << '\t';
-        archivo << tmp->primerNodo->producto->tiempoFabricacion << '\t';
-        archivo << tmp->primerNodo->producto->categoria << '\t';
-        archivo << tmp->primerNodo->producto->ubicacionBodega;
-        tmp->primerNodo = tmp->primerNodo->siguiente;
-        if (tmp->primerNodo != NULL)
-            archivo << '\n';
-        else 
-            listaLlena = false;
+    NodoProducto * tmp = lista->primerNodo;
+    while (tmp != NULL){
+        archivo << tmp->producto->codigo << '\t';
+        archivo << tmp->producto->cantidadAlmacen << '\t';
+        archivo << tmp->producto->tiempoFabricacion << '\t';
+        archivo << tmp->producto->categoria << '\t';
+        archivo << tmp->producto->ubicacionBodega << '\n';
+        tmp = tmp->siguiente;
     }
     archivo.close();
 }

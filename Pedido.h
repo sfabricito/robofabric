@@ -4,7 +4,6 @@ void revisarPedido(string ,ListaCliente *,ListaProducto *);
 vector<string> separarProductoDePedido(string );
 void leerArchivosEnCarpeta(string ,ListaCliente * ,ListaProducto * );
 
-
 struct ProductoDePedido{
     // Variables
     string codigoProducto;
@@ -54,7 +53,7 @@ struct NodoProductoDePedido{
 
     // Procedimientos
     void imprimir(){
-        cout << "Código: " <<  producto->codigoProducto << " Cantidad Pedida: " << producto->cantidadPedida << endl;
+        cout << "Código:\t" <<  producto->codigoProducto << "\tCantidad Pedida:\t" << producto->cantidadPedida << "\tCantidad Comprometida:\t" << producto->cantidadComprometida<< endl;
     }
 };
 
@@ -136,6 +135,7 @@ struct Pedido{
     // Variables
     string codigoCliente;
     int numeroPedido;
+    bool atendido;
     ListaProductoDePedido * productosPedidos;
 
     // Constructores
@@ -143,12 +143,14 @@ struct Pedido{
         codigoCliente = "";
         numeroPedido = 0;
         productosPedidos = new ListaProductoDePedido();
+        atendido = false;
     }
 
     Pedido(string _codigoCliente,int _numeroPedido){
         codigoCliente = _codigoCliente;
         numeroPedido = _numeroPedido;
         productosPedidos = new ListaProductoDePedido();
+        atendido = false;
     }
 
     //Metodos
@@ -156,7 +158,7 @@ struct Pedido{
         string pedidos;
         NodoProductoDePedido * tmp = productosPedidos->primerNodo;
         while(tmp != NULL){
-            pedidos += tmp->producto->codigoProducto + "\t" + to_string(tmp->producto->cantidadPedida) + "\n";
+            pedidos += tmp->producto->codigoProducto + "\t" + to_string(tmp->producto->cantidadPedida) + "\t" + to_string(tmp->producto->cantidadComprometida)+"\n";
             tmp = tmp->siguiente;
         }
         return "Numero pedido: " + to_string(numeroPedido) + "\tCodigo Cliente: " + codigoCliente + "\nPedidos:\n" + pedidos;
@@ -165,7 +167,50 @@ struct Pedido{
     void agregarProducto(ProductoDePedido * producto){
         productosPedidos->insertarAlFinal(producto);
     }
-    
+
+
+    bool isPedidoCompleto(){
+        NodoProductoDePedido * tmp = productosPedidos->primerNodo;
+        while (tmp != NULL){
+            if (tmp->producto->cantidadComprometida != tmp->producto->cantidadPedida)
+                return false;
+            tmp = tmp->siguiente;
+            }
+        return true;
+    }
+
+    ListaProductoDePedido * getProductosFaltantes(){
+        NodoProductoDePedido * tmp = productosPedidos->primerNodo;
+        ListaProductoDePedido * nueva = new ListaProductoDePedido();
+        while (tmp != NULL){
+            if (tmp->producto->cantidadComprometida != tmp->producto->cantidadPedida)
+                nueva->insertarAlFinal(tmp->producto);
+            tmp = tmp ->siguiente;
+        }
+        return nueva;
+    }
+
+    void ajustarPedido(ListaProducto * productos){
+        NodoProductoDePedido * tmp = productosPedidos->primerNodo;
+        while (tmp != NULL){
+            NodoProducto * producto = productos->buscarProductoPorCodigo(tmp->producto->codigoProducto);
+            if(producto != NULL){
+                if (tmp->producto->cantidadPedida == tmp->producto->cantidadComprometida){
+                    tmp = tmp->siguiente;
+                    continue;
+                }
+                if (tmp->producto->cantidadPedida <= producto->producto->cantidadAlmacen){
+                    tmp->producto->cantidadComprometida += tmp->producto->cantidadPedida;
+                    producto->producto->cantidadAlmacen -= tmp->producto->cantidadComprometida;
+                } else if (tmp->producto->cantidadPedida > producto->producto->cantidadAlmacen){
+                    tmp->producto->cantidadComprometida += producto->producto->cantidadAlmacen;
+                    producto->producto->cantidadAlmacen = 0;
+                }
+            }
+            tmp = tmp->siguiente;
+        }
+        actualizarArchivoProductos(productos);   
+    }
 };
 
 struct NodoPedido{
@@ -223,6 +268,10 @@ struct ListaPedido{//esto va a servir como las colas de nuestros pedidos
 			ultimoNodo->siguiente = nuevo;
 			ultimoNodo = nuevo;
 		}
+    }
+
+    NodoPedido * peek(){
+        return primerNodo;
     }
 
     NodoPedido * desencolar(){

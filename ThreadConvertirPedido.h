@@ -36,9 +36,9 @@ struct ThreadConvertirPedido {
             // Realiza alguna tarea aquí
             std::this_thread::sleep_for(std::chrono::seconds(2));
             convertirPedidosDeCarpeta("Procesados",prioridadAlta,prioridadMedia,prioridadBaja,clientes);
-            cout << "Thread breteando:  " << i++ << endl;
+            //cout << "Thread breteando:  " << i++ << endl;
         }
-        std::cout << "Thread ha terminado." << std::endl;
+        //std::cout << "Thread ha terminado." << std::endl;
     }
 
     // Función para pausar el thread
@@ -49,6 +49,7 @@ struct ThreadConvertirPedido {
     // Función para reanudar el thread
     void Reanudar() {
         paused = false;
+        running = false;
     }
 
     // Función para terminar el thread
@@ -86,12 +87,9 @@ Pedido * convertirAPedido(string _archivo){
         while(getline(archivo,linea)){
             producto = separarProductoDePedido(linea);
             cantidad = stoi(producto[1]);
-            //cout << "PRODUCTO:   " << producto[0] << "  CANTIDAD   " << cantidad << endl;
-            //cout << "PRODUCTOOOOOOOOOOOOO: " << productoDePedido->codigoProducto << "  " <<productoDePedido->cantidadPedida  << endl;
             pedido->agregarProducto(new ProductoDePedido(producto[0],cantidad,0));
         }
         archivo.close();
-        cout << ruta << "\t" << desktop << endl;
         rename(ruta.c_str(),desktop.c_str());
         return pedido;
     }

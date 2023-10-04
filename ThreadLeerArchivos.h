@@ -1,51 +1,73 @@
 #include "Pedido.h"
 
 struct threadLeerArchivo{//este thread lee los archivos
-    bool running = true,paused = false;
+    std::thread thread; // El thread se encuentra dentro de la estructura
+    bool running = false,paused = false;
     ListaProducto * productos;
     ListaCliente * clientes;
-    
+    std::mutex mutex;
 
-    void operator()() {
-        while (running) {
-            if (!paused) {
-                leerArchivosEnCarpeta("Pedidos",clientes,productos);
-            }
-            this_thread::sleep_for(chrono::seconds(5));
-        }
-    }
-
-    std::thread thread; // El thread se encuentra dentro de la estructura
-
-    // Constructor que inicia el thread en el momento de la creación de la estructura
     threadLeerArchivo(ListaProducto * l1, ListaCliente * l2) : thread(&threadLeerArchivo::operator(), this) {
         productos = l1;
         clientes = l2;
     }
+    
+    void operator()() {
+        int i = 0;
+        while (!running) {
+            {
+                std::unique_lock<std::mutex> lock(mutex);
+                while (paused) {
+                    // El thread está en pausa, espera
+                    lock.unlock();
+                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                    lock.lock();
+                }
+            }
 
-    void stop() {
-        running = false;
-        paused = false; // Asegúrate de que el hilo no esté en pausa
-        if (thread.joinable()) {
-            thread.join(); // Espera a que el hilo termine
+            // Realiza alguna tarea aquí
+            std::this_thread::sleep_for(std::chrono::seconds(2));
+            leerArchivosEnCarpeta("Pedidos",clientes,productos);
+            cout << "Thread breteando leer :  " << i++ << endl;
         }
+        std::cout << "Thread ha terminado." << std::endl;
     }
 
-    // Método para pausar el hilo
-    void pause() {
+    
+
+    // Constructor que inicia el thread en el momento de la creación de la estructura
+    
+
+    // Función para pausar el thread
+    void Pausar() {
         paused = true;
     }
 
-    // Método para reanudar el hilo
-    void resume() {
+    // Función para reanudar el thread
+    void Reanudar() {
         paused = false;
+    }
+
+    // Función para terminar el thread
+    void Terminar() {
+        running = true;
+        if (thread.joinable()) {
+            thread.join();
+        }
+    }
+
+    // Destructor
+    ~threadLeerArchivo() {
+        Terminar(); // Asegura que el thread se termine correctamente
     }
 
 };
 
 void leerArchivosEnCarpeta(string rutaCarpeta,ListaCliente * clientes,ListaProducto * productos) {
+    cout << "que pasa" << endl;
     for (const auto& archivo : fs::directory_iterator(rutaCarpeta)) {
         if (fs::is_regular_file(archivo)) {
+            cout << archivo.path().filename().string() << endl;
             revisarPedido(archivo.path().filename().string(),clientes,productos);
         }
     }
