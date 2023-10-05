@@ -3,27 +3,24 @@ void leerArchivosEnCarpeta(string);
 void revisarPedido(string ,ListaCliente *,ListaProducto *);
 vector<string> separarProductoDePedido(string );
 void leerArchivosEnCarpeta(string ,ListaCliente * ,ListaProducto * );
-
+int obtenerValorPosicional(char);
 struct ProductoDePedido{
     // Variables
     string codigoProducto;
-    int cantidadPedida, cantidadComprometida;
+    int cantidadPedida, cantidadComprometida, numeroDePedido;
     // Constructores
-    ProductoDePedido(string _codigoProducto,int _cantidadPedida, int _cantidadComprometida){
+    ProductoDePedido(string _codigoProducto,int _cantidadPedida, int _cantidadComprometida,int _numeroDePedido){
         codigoProducto = _codigoProducto;
         cantidadPedida = _cantidadPedida;
         cantidadComprometida = _cantidadComprometida;
+        numeroDePedido = _numeroDePedido;
     }  
 
     ProductoDePedido(){
         codigoProducto = "";
         cantidadPedida = 0;
         cantidadComprometida = 0;
-    }  
-
-    string toString(){
-        return "Codigo producto: " + codigoProducto + " Cantidad: " + to_string(cantidadPedida);
-    }
+    } 
 };
 
 struct NodoProductoDePedido{
@@ -53,7 +50,8 @@ struct NodoProductoDePedido{
 
     // Procedimientos
     void imprimir(){
-        cout << "Código:\t" <<  producto->codigoProducto << "\tCantidad Pedida:\t" << producto->cantidadPedida << "\tCantidad Comprometida:\t" << producto->cantidadComprometida<< endl;
+        cout << "Código:\t" <<  producto->codigoProducto << "\tCantidad Pedida:\t" << producto->cantidadPedida << "\tCantidad Comprometida:\t" << producto->cantidadComprometida<< 
+        "\tNumero De Pedido: " << producto->numeroDePedido << endl;
     }
 };
 
@@ -72,6 +70,10 @@ struct ListaProductoDePedido{
 		return primerNodo == NULL;
 	}
 
+    NodoProductoDePedido * peek(){
+        return primerNodo;
+    }
+    
     void insertarAlInicio (ProductoDePedido * productoPedido){
 		if (isEmpty())
 			primerNodo = ultimoNodo = new NodoProductoDePedido (productoPedido);
@@ -211,6 +213,23 @@ struct Pedido{
         }
         actualizarArchivoProductos(productos);   
     }
+
+    int getDuracionDePicking(ListaProducto * productos){
+        int res = 0;
+        NodoProductoDePedido * tmp = productosPedidos->primerNodo;
+        while (tmp != NULL){
+            string ubicacion = productos->buscarUbicacionDeProducto(tmp->producto->codigoProducto);
+            char columna = ubicacion[0];
+            char fila1 = ubicacion[1];
+            char fila2 = ubicacion[2];
+            string fila = "";
+            fila += fila1;
+            fila += fila2;
+            res += (obtenerValorPosicional(columna)-1  + stoi(fila)-1)*2;
+            tmp = tmp->siguiente;
+        }
+        return res;
+    }
 };
 
 struct NodoPedido{
@@ -302,13 +321,10 @@ vector<string> separarProductoDePedido(string cadena){
     string parte = "";
 	bool flag = false;
 	for(int i = 0 ; i < cadena.length() ; i++){
-		//cout << "probando :           " << cadena[i] << endl;
 		if(cadena[i] != '\t'){
-			//cout << "se metio if 1"  << endl;
 			parte += cadena[i];
 			flag = true;
 		}else if(cadena[i] == '\t'){
-			//cout << "se metio if 2"  << endl;
 			if(flag == true){
 				partes.push_back(parte);
 				flag = false;
@@ -354,5 +370,19 @@ void revisarPedido(string _archivo,ListaCliente * listaCliente,ListaProducto * l
     } else {
         cout << "no se abrio" << endl;
         return;
+    }
+}
+
+int obtenerValorPosicional(char letra) {
+    // Verifica si la letra es una letra minúscula o mayúscula
+    if (letra >= 'a' && letra <= 'z') {
+        // Si es minúscula, resta 'a' y suma 1 para obtener el valor posicional
+        return letra - 'a' + 1;
+    } else if (letra >= 'A' && letra <= 'Z') {
+        // Si es mayúscula, resta 'A' y suma 1 para obtener el valor posicional
+        return letra - 'A' + 1;
+    } else {
+        // Si no es una letra del alfabeto, devuelve -1 o maneja el error según tus necesidades
+        return -1;
     }
 }

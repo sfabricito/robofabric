@@ -6,7 +6,7 @@ void convertirPedidosDeCarpeta(string ,ListaPedido * ,ListaPedido * ,ListaPedido
 struct ThreadConvertirPedido {
     std::thread thread; // El objeto thread
 
-    bool running = false,paused = false;
+    bool running = true,paused = false;
     ListaPedido * prioridadAlta, * prioridadMedia,* prioridadBaja;
     ListaCliente * clientes;
     std::mutex mutex; // Mutex para la sincronización de pausa/reanudación
@@ -21,7 +21,6 @@ struct ThreadConvertirPedido {
 
     // Función que será ejecutada por el thread
     void operator()() {
-        int i = 0;
         while (!running) {
             {
                 std::unique_lock<std::mutex> lock(mutex);
@@ -34,7 +33,10 @@ struct ThreadConvertirPedido {
             }
 
             // Realiza alguna tarea aquí
+            std::unique_lock<std::mutex> lock(mutex);
+            lock.unlock();
             std::this_thread::sleep_for(std::chrono::seconds(2));
+            lock.lock();
             convertirPedidosDeCarpeta("Procesados",prioridadAlta,prioridadMedia,prioridadBaja,clientes);
             //cout << "Thread breteando:  " << i++ << endl;
         }
@@ -87,7 +89,7 @@ Pedido * convertirAPedido(string _archivo){
         while(getline(archivo,linea)){
             producto = separarProductoDePedido(linea);
             cantidad = stoi(producto[1]);
-            pedido->agregarProducto(new ProductoDePedido(producto[0],cantidad,0));
+            pedido->agregarProducto(new ProductoDePedido(producto[0],cantidad,0,codigo));
         }
         archivo.close();
         rename(ruta.c_str(),desktop.c_str());

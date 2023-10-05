@@ -148,6 +148,16 @@ struct ListaProducto{
         return NULL;
     }
 
+    string buscarUbicacionDeProducto(string _codigo){
+        NodoProducto * tmp = primerNodo;
+        while (tmp != NULL){
+            if(tmp->producto->codigo == _codigo)
+                return tmp->producto->ubicacionBodega;
+            tmp = tmp->siguiente;
+        }
+        return NULL;
+    }
+
     void imprimir(){
         NodoProducto * tmp = primerNodo;
         while (tmp != NULL)
@@ -156,6 +166,19 @@ struct ListaProducto{
             tmp = tmp->siguiente;
         }
     }
+
+    int getDuracion(string _codigo){
+        NodoProducto * tmp = primerNodo;
+        while (tmp != NULL){
+            if (tmp->producto->codigo == _codigo){
+                return tmp->producto->tiempoFabricacion;
+            }
+            tmp = tmp->siguiente;
+        }
+        return -1;
+    }
+
+    
 };
 
 Producto * separarProductoCadena(string cadena){

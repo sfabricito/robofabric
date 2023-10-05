@@ -1,11 +1,9 @@
 #include "ThreadConvertirPedido.h"
 
-bool isPedidoCompleto(ListaProducto * , ListaPedido * , Pedido * );
-
 struct ThreadBalanceador{
     std::thread thread; // El objeto thread
 
-    bool running = false, paused  = false;
+    bool running = true, paused  = false;
     ListaPedido * pedidosCompletados, * prioridadAlta, * prioridadMedia,* prioridadBaja;
     ListaProducto * productos;
     ListaProductoDePedido * productosParaFabricar;
@@ -33,60 +31,69 @@ struct ThreadBalanceador{
                 }
             }
             // Realiza alguna tarea aquí
-            std::this_thread::sleep_for(std::chrono::seconds(2));
+            std::unique_lock<std::mutex> lock(mutex);
+            lock.unlock();
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            lock.lock();
            // cout << "TEST:   " << prioridadBaja->isEmpty()<< endl;
             if (!prioridadAlta->isEmpty()){
                 prioridadAlta->peek()->pedido->ajustarPedido(productos);
-                if(prioridadAlta->peek()->pedido->isPedidoCompleto())
-                    pedidosCompletados->encolar(prioridadAlta->desencolar()->pedido);
-                else{
+                if(prioridadAlta->peek()->pedido->isPedidoCompleto()){
+                    Pedido * nuevo = prioridadAlta->desencolar()->pedido;
+                    pedidosCompletados->encolar(nuevo);
+                }else{
                     if(!prioridadAlta->peek()->pedido->atendido){
                         ListaProductoDePedido * pendientes = prioridadAlta->peek()->pedido->getProductosFaltantes();
                         NodoProductoDePedido * tmp =  pendientes->primerNodo;
                         while (tmp != NULL){
-                            ProductoDePedido * nuevo = new ProductoDePedido(tmp->producto->codigoProducto,tmp->producto->cantidadPedida-tmp->producto->cantidadComprometida,0);
+                            ProductoDePedido * nuevo = new ProductoDePedido(tmp->producto->codigoProducto,tmp->producto->cantidadPedida-tmp->producto->cantidadComprometida,0,prioridadAlta->peek()->pedido->numeroPedido);
                             productosParaFabricar->insertarAlFinal(nuevo);
                             tmp = tmp->siguiente;
                         }
                     }
                     prioridadAlta->peek()->pedido->atendido = true;
-                    prioridadAlta->encolar(prioridadAlta->desencolar()->pedido);
+                    Pedido * nuevo = prioridadAlta->desencolar()->pedido;
+                    prioridadAlta->encolar(nuevo);
                 }
             } 
             if (!prioridadMedia->isEmpty()){
                 prioridadMedia->peek()->pedido->ajustarPedido(productos);
-                if (prioridadMedia->peek()->pedido->isPedidoCompleto())
-                    pedidosCompletados->encolar(prioridadMedia->desencolar()->pedido);
-                else{
+                if (prioridadMedia->peek()->pedido->isPedidoCompleto()){
+                    Pedido * nuevo = prioridadMedia->desencolar()->pedido;
+                    pedidosCompletados->encolar(nuevo);
+                }else{
                     if(!prioridadMedia->peek()->pedido->atendido){
                         ListaProductoDePedido * pendientes = prioridadMedia->peek()->pedido->getProductosFaltantes();
                         NodoProductoDePedido * tmp =  pendientes->primerNodo;
                         while (tmp != NULL){
-                            ProductoDePedido * nuevo = new ProductoDePedido(tmp->producto->codigoProducto,tmp->producto->cantidadPedida-tmp->producto->cantidadComprometida,0);
+                            ProductoDePedido * nuevo = new ProductoDePedido(tmp->producto->codigoProducto,tmp->producto->cantidadPedida-tmp->producto->cantidadComprometida,0,prioridadMedia->peek()->pedido->numeroPedido);
                             productosParaFabricar->insertarAlFinal(nuevo);
                             tmp = tmp->siguiente;
                         }
                     }
                     prioridadMedia->peek()->pedido->atendido = true;
-                    prioridadMedia->encolar(prioridadMedia->desencolar()->pedido);
+                    Pedido * nuevo = prioridadMedia->desencolar()->pedido;
+                    prioridadMedia->encolar(nuevo);
                 }
             }
             if (!prioridadBaja->isEmpty()){
-                
-                if (prioridadBaja->peek()->pedido->isPedidoCompleto())
-                    pedidosCompletados->encolar(prioridadBaja->desencolar()->pedido);
-                else{
+                prioridadBaja->peek()->pedido->ajustarPedido(productos);
+                if (prioridadBaja->peek()->pedido->isPedidoCompleto()){
+                    Pedido * nuevo = prioridadBaja->desencolar()->pedido;
+                    pedidosCompletados->encolar(nuevo);
+                }else{
                     if(!prioridadBaja->peek()->pedido->atendido){
                         ListaProductoDePedido * pendientes = prioridadBaja->peek()->pedido->getProductosFaltantes();
                         NodoProductoDePedido * tmp =  pendientes->primerNodo;
                         while (tmp != NULL){
-                            ProductoDePedido * nuevo = new ProductoDePedido(tmp->producto->codigoProducto,tmp->producto->cantidadPedida-tmp->producto->cantidadComprometida,0);
+                            ProductoDePedido * nuevo = new ProductoDePedido(tmp->producto->codigoProducto,tmp->producto->cantidadPedida-tmp->producto->cantidadComprometida,0,prioridadBaja->peek()->pedido->numeroPedido);
                             productosParaFabricar->insertarAlFinal(nuevo);
                             tmp = tmp->siguiente;
                         }
                     }
                     prioridadBaja->peek()->pedido->atendido = true;
-                    prioridadBaja->encolar(prioridadBaja->desencolar()->pedido);
+                    Pedido * nuevo = prioridadBaja->desencolar()->pedido;
+                    prioridadBaja->encolar(nuevo);
                 }
             }
             //cout << "Thread breteando:  " << i++ << endl;

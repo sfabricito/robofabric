@@ -13,7 +13,6 @@ struct threadLeerArchivo{//este thread lee los archivos
     }
     
     void operator()() {
-        int i = 0;
         while (!running) {
             {
                 std::unique_lock<std::mutex> lock(mutex);
@@ -28,7 +27,7 @@ struct threadLeerArchivo{//este thread lee los archivos
             // Realiza alguna tarea aquí
             std::this_thread::sleep_for(std::chrono::seconds(2));
             leerArchivosEnCarpeta("Pedidos",clientes,productos);
-            cout << "Thread breteando leer :  " << i++ << endl;
+            //cout << "Thread breteando leer :  " << i++ << endl;
         }
         std::cout << "Thread ha terminado." << std::endl;
     }
@@ -46,6 +45,7 @@ struct threadLeerArchivo{//este thread lee los archivos
     // Función para reanudar el thread
     void Reanudar() {
         paused = false;
+        running = false;
     }
 
     // Función para terminar el thread
@@ -64,7 +64,6 @@ struct threadLeerArchivo{//este thread lee los archivos
 };
 
 void leerArchivosEnCarpeta(string rutaCarpeta,ListaCliente * clientes,ListaProducto * productos) {
-    cout << "que pasa" << endl;
     for (const auto& archivo : fs::directory_iterator(rutaCarpeta)) {
         if (fs::is_regular_file(archivo)) {
             cout << archivo.path().filename().string() << endl;
