@@ -1,33 +1,30 @@
-#include "Fabricador.h"
+#include "Picking.h"
 
-struct PickingThread {
+struct Empacador{
     std::thread thread; // El objeto thread
     bool pausado; // Variable de control para pausar el thread
     bool terminar; // Variable de control para terminar el thread
     std::mutex mutex; // Mutex para la sincronización de pausa/reanudación
     ListaProducto * productos;
-    ListaPedido * productosParaPicking;
     ListaPedido * alistados;
-    int id;
-
+    ListaPedido * pedidosParaFacturar;
 
     // Constructor
-    PickingThread(int _id,ListaProducto * _productos, ListaPedido * _productosParaPicking, ListaPedido * _alistados) :  pausado(false), terminar(false) {
+    Empacador(ListaPedido * _pedidosParaFacturar,ListaProducto * _productos, ListaPedido * _alistados) :  pausado(false), terminar(false) {
         // Iniciar el thread en el constructor
-        thread = std::thread(&PickingThread::MiFuncion, this);
-        productosParaPicking = _productosParaPicking;
+        thread = std::thread(&Empacador::MiFuncion, this);
         alistados = _alistados;
         productos = _productos;
-        id = _id;
+        pedidosParaFacturar = _pedidosParaFacturar;
+        
     }
 
     // Función que será ejecutada por el thread
     void MiFuncion() {
         while (!terminar) {
-            {   
-                cout << "se mete aqui??????" << endl;
+            {
                 std::unique_lock<std::mutex> lock(mutex);
-                while (pausado) {
+                while (pausado){
                     // El thread está en pausa, espera
                     lock.unlock();
                     std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -39,15 +36,14 @@ struct PickingThread {
             // Realiza alguna tarea aquí
             std::this_thread::sleep_for(std::chrono::seconds(1));
             lock.lock();
-            cout << "soy picking" << endl;
-            if(!productosParaPicking->isEmpty()){
-                int duracion = productosParaPicking->peek()->pedido->getDuracionDePicking(productos);
-                std::this_thread::sleep_for(std::chrono::seconds(duracion));
-                NodoPedido * nuevo = productosParaPicking->desencolar();
-                alistados->encolar(nuevo->pedido);
+            cout << "soy empacador" << endl;
+            if(!alistados->isEmpty()){
+                std::this_thread::sleep_for(std::chrono::seconds(alistados->peek()->pedido->getCantidadDePedidos()));
+                NodoPedido * nuevo = alistados->desencolar();
+                pedidosParaFacturar->encolar(nuevo->pedido);
             }
         }
-        cout << "soy picking terminado" << endl;
+        cout << "soy empacador terminado" << endl;
     }
 
     // Función para pausar el thread
@@ -69,8 +65,7 @@ struct PickingThread {
     }
 
     // Destructor
-    ~PickingThread() {
+    ~Empacador() {
         Terminar(); // Asegura que el thread se termine correctamente
     }
-    
 };

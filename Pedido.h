@@ -4,6 +4,7 @@ void revisarPedido(string ,ListaCliente *,ListaProducto *);
 vector<string> separarProductoDePedido(string );
 void leerArchivosEnCarpeta(string ,ListaCliente * ,ListaProducto * );
 int obtenerValorPosicional(char);
+
 struct ProductoDePedido{
     // Variables
     string codigoProducto;
@@ -230,6 +231,16 @@ struct Pedido{
         }
         return res;
     }
+
+    int getCantidadDePedidos(){
+        int cont = 0;
+        NodoProductoDePedido * tmp = productosPedidos->primerNodo;
+        while (tmp != NULL){
+            cont++;
+            tmp = tmp->siguiente;
+        }
+        return cont;
+    }
 };
 
 struct NodoPedido{
@@ -352,7 +363,7 @@ void revisarPedido(string _archivo,ListaCliente * listaCliente,ListaProducto * l
         if (!listaCliente->buscarCliente(codigoCliente)){
             archivo.close();
             rename(rutaVieja.c_str(),rutaNueva.c_str());
-            return;
+            
         }
         vector<string> producto;
         int cantidad;
@@ -362,14 +373,13 @@ void revisarPedido(string _archivo,ListaCliente * listaCliente,ListaProducto * l
             if(!listaProducto->buscarProductoPorCodigo(producto[0]) || cantidad < 1){
                 archivo.close();
                 rename(rutaVieja.c_str(),rutaNueva.c_str());
-                return;
+                
             }
         }
         archivo.close();
         rename(rutaVieja.c_str(),rutaBuena.c_str());
     } else {
         cout << "no se abrio" << endl;
-        return;
     }
 }
 
