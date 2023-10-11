@@ -22,6 +22,10 @@ struct ProductoDePedido{
         cantidadPedida = 0;
         cantidadComprometida = 0;
     } 
+
+    string toString(){
+        return "Codigo:\t" + codigoProducto + "Cantidad Pedida:\t" + to_string(cantidadPedida) +"Numero De Pedido:\t" +to_string(numeroDePedido)+ "\n";
+    }
 };
 
 struct NodoProductoDePedido{
@@ -140,6 +144,8 @@ struct Pedido{
     int numeroPedido;
     bool atendido;
     ListaProductoDePedido * productosPedidos;
+    ListaString * movimientos;
+    ListaString * procesosDeRobots;
 
     // Constructores
     Pedido(){
@@ -147,6 +153,8 @@ struct Pedido{
         numeroPedido = 0;
         productosPedidos = new ListaProductoDePedido();
         atendido = false;
+        movimientos = new ListaString();
+        procesosDeRobots = new ListaString();
     }
 
     Pedido(string _codigoCliente,int _numeroPedido){
@@ -154,6 +162,8 @@ struct Pedido{
         numeroPedido = _numeroPedido;
         productosPedidos = new ListaProductoDePedido();
         atendido = false;
+        movimientos = new ListaString();
+        procesosDeRobots = new ListaString();
     }
 
     //Metodos
@@ -395,4 +405,19 @@ int obtenerValorPosicional(char letra) {
         // Si no es una letra del alfabeto, devuelve -1 o maneja el error según tus necesidades
         return -1;
     }
+}
+
+//me retorna un int con el dato de lo que dura el producto en alistar
+int getDuracionDelProducto(string ubicacion){
+        int res = 0;
+        char columna = ubicacion[0];
+        char fila1 = ubicacion[1];
+        char fila2 = ubicacion[2];
+        string fila = "";
+        fila += fila1;
+        fila += fila2;
+        res += (obtenerValorPosicional(columna)-1  + stoi(fila)-1)*2;
+
+        
+        return res;
 }

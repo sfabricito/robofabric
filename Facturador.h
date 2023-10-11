@@ -1,23 +1,22 @@
-#include "Picking.h"
+#include "Empacador.h"
 
-struct Empacador{
+struct Facturador{
     std::thread thread; // El objeto thread
     bool pausado; // Variable de control para pausar el thread
     bool terminar; // Variable de control para terminar el thread
     //std::mutex mutex; // Mutex para la sincronización de pausa/reanudación
-    ListaProducto * productos;
-    ListaPedido * alistados;
     ListaPedido * pedidosParaFacturar;
-    ListaString * historial;
 
     // Constructor
-    Empacador(ListaPedido * _pedidosParaFacturar,ListaProducto * _productos, ListaPedido * _alistados) :  pausado(false), terminar(false) {
+    Facturador(ListaPedido * _pedidosParaFacturar) :  pausado(false), terminar(false) {
         // Iniciar el thread en el constructor
-        thread = std::thread(&Empacador::MiFuncion, this);
-        alistados = _alistados;
-        productos = _productos;
+        thread = std::thread(&Facturador::MiFuncion, this);
         pedidosParaFacturar = _pedidosParaFacturar;
-        historial = new ListaString ();
+    }
+
+    Facturador() :  pausado(false), terminar(false) {
+        // Iniciar el thread en el constructor
+        thread = std::thread(&Facturador::MiFuncion, this);
         
     }
 
@@ -26,24 +25,30 @@ struct Empacador{
         while (!terminar) {
             {
                 //std::unique_lock<std::mutex> lock(mutex);
-                while (pausado){
+                while (pausado) {
                     // El thread está en pausa, espera
                     //lock.unlock();
                     std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                    //cout << "pausado" << endl;
                     //lock.lock();
                 }
             }
             // Realiza alguna tarea aquí
             std::this_thread::sleep_for(std::chrono::seconds(1));
-            if(!alistados->isEmpty()){
-                cout << "QUE PASA AQUI: " << alistados->peek()->pedido->getCantidadDePedidos() << endl;
-                std::this_thread::sleep_for(std::chrono::seconds(alistados->peek()->pedido->getCantidadDePedidos()));
-                NodoPedido * nuevo = alistados->desencolar();
-                historial->insertarAlFinal(nuevo->pedido->toString());
-                nuevo->pedido->movimientos->insertarAlFinal("A facturar:\t" + getDateTime() + "\n");
-
-                pedidosParaFacturar->encolar(nuevo->pedido);
+            if (!pedidosParaFacturar->isEmpty()){
+                cout << "HAY ALGO PARA FACTURAR" << endl;
+                Pedido * pedidoTmp = pedidosParaFacturar->peek()->pedido;
+                string ruta ="",infoPedido="";
+                ruta += "Facturados//"+to_string( pedidoTmp->numeroPedido)+"_"+pedidoTmp->codigoCliente+"_";
+                ruta += getDateTime()+".txt";
+                cout << ruta << endl;
+                infoPedido += pedidoTmp->movimientos->getInfo();
+                infoPedido += pedidoTmp->procesosDeRobots->getInfo();
+                ofstream archivo(ruta.c_str());
+                archivo << infoPedido;
+                pedidosParaFacturar->desencolar();
             }
+
         }
     }
 
@@ -55,6 +60,7 @@ struct Empacador{
     // Función para reanudar el thread
     void Reanudar() {
         pausado = false;
+        terminar = false;
     }
 
     // Función para terminar el thread
@@ -66,7 +72,7 @@ struct Empacador{
     }
 
     // Destructor
-    ~Empacador() {
+    ~Facturador() {
         Terminar(); // Asegura que el thread se termine correctamente
     }
 };

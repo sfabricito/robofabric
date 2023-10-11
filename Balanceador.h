@@ -3,11 +3,12 @@
 struct ThreadBalanceador{
     std::thread thread; // El objeto thread
 
-    bool running = true, paused  = false;
+    bool running = false, paused  = false;
     ListaPedido * pedidosCompletados, * prioridadAlta, * prioridadMedia,* prioridadBaja;
     ListaProducto * productos;
     ListaProductoDePedido * productosParaFabricar;
-    std::mutex mutex; // Mutex para la sincronización de paused/reanudación
+    ListaString * historial;
+    //std::mutex mutex; // Mutex para la sincronización de paused/reanudación
 
     ThreadBalanceador(ListaProductoDePedido * _productosParaFabricar,ListaProducto * _productos, ListaPedido * _pedidosCompletados, ListaPedido * alta, ListaPedido * media,ListaPedido * baja) : thread(&ThreadBalanceador::operator(), this){
         productos = _productos;
@@ -16,30 +17,28 @@ struct ThreadBalanceador{
         prioridadMedia = media;
         prioridadBaja = baja;
         productosParaFabricar = _productosParaFabricar;
+        historial = new ListaString();
+        running = false;
     }
 
     void operator()() {
-        int i = 0;
         while (!running) {
             {
-                std::unique_lock<std::mutex> lock(mutex);
+                //std::unique_lock<std::mutex> lock(mutex);
                 while (paused) {
                     // El thread está en pausa, espera
-                    lock.unlock();
                     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                    lock.lock();
+                    //std::lock_guard<std::mutex> lock(mutex);
                 }
             }
             // Realiza alguna tarea aquí
-            std::unique_lock<std::mutex> lock(mutex);
-            lock.unlock();
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
-            lock.lock();
-           // cout << "TEST:   " << prioridadBaja->isEmpty()<< endl;
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            cout << "que paso" << endl;
             if (!prioridadAlta->isEmpty()){
                 prioridadAlta->peek()->pedido->ajustarPedido(productos);
                 if(prioridadAlta->peek()->pedido->isPedidoCompleto()){
                     Pedido * nuevo = prioridadAlta->desencolar()->pedido;
+                    nuevo->movimientos->insertarAlFinal("En cola alisto:\t" + getDateTime()+"\n");
                     pedidosCompletados->encolar(nuevo);
                 }else{
                     if(!prioridadAlta->peek()->pedido->atendido){
@@ -53,6 +52,7 @@ struct ThreadBalanceador{
                     }
                     prioridadAlta->peek()->pedido->atendido = true;
                     Pedido * nuevo = prioridadAlta->desencolar()->pedido;
+                    historial->insertarAlFinal(nuevo->toString());
                     prioridadAlta->encolar(nuevo);
                 }
             } 
@@ -60,6 +60,7 @@ struct ThreadBalanceador{
                 prioridadMedia->peek()->pedido->ajustarPedido(productos);
                 if (prioridadMedia->peek()->pedido->isPedidoCompleto()){
                     Pedido * nuevo = prioridadMedia->desencolar()->pedido;
+                    nuevo->movimientos->insertarAlFinal("En cola alisto:\t" + getDateTime()+"\n");
                     pedidosCompletados->encolar(nuevo);
                 }else{
                     if(!prioridadMedia->peek()->pedido->atendido){
@@ -73,6 +74,7 @@ struct ThreadBalanceador{
                     }
                     prioridadMedia->peek()->pedido->atendido = true;
                     Pedido * nuevo = prioridadMedia->desencolar()->pedido;
+                    historial->insertarAlFinal(nuevo->toString());
                     prioridadMedia->encolar(nuevo);
                 }
             }
@@ -80,6 +82,7 @@ struct ThreadBalanceador{
                 prioridadBaja->peek()->pedido->ajustarPedido(productos);
                 if (prioridadBaja->peek()->pedido->isPedidoCompleto()){
                     Pedido * nuevo = prioridadBaja->desencolar()->pedido;
+                    nuevo->movimientos->insertarAlFinal("En cola alisto:\t" + getDateTime()+"\n");
                     pedidosCompletados->encolar(nuevo);
                 }else{
                     if(!prioridadBaja->peek()->pedido->atendido){
@@ -93,6 +96,7 @@ struct ThreadBalanceador{
                     }
                     prioridadBaja->peek()->pedido->atendido = true;
                     Pedido * nuevo = prioridadBaja->desencolar()->pedido;
+                    historial->insertarAlFinal(nuevo->toString());
                     prioridadBaja->encolar(nuevo);
                 }
             }
