@@ -9,7 +9,7 @@ struct ThreadConvertirPedido {
     bool running = true,paused = false;
     ListaPedido * prioridadAlta, * prioridadMedia,* prioridadBaja;
     ListaCliente * clientes;
-    std::mutex mutex; // Mutex para la sincronización de pausa/reanudación
+    //std::mutex mutex; // Mutex para la sincronización de pausa/reanudación
 
     // Constructor
     ThreadConvertirPedido(ListaCliente * _clientes,ListaPedido * alta, ListaPedido * media,ListaPedido * baja) : thread(&ThreadConvertirPedido::operator(), this) {
@@ -23,20 +23,16 @@ struct ThreadConvertirPedido {
     void operator()() {
         while (!running) {
             {
-                std::unique_lock<std::mutex> lock(mutex);
+                //std::unique_lock<std::mutex> lock(mutex);
                 while (paused) {
                     // El thread está en pausa, espera
-                    lock.unlock();
+                    //lock.unlock();
                     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                    lock.lock();
+                    //lock.lock();
                 }
             }
-
             // Realiza alguna tarea aquí
-            std::unique_lock<std::mutex> lock(mutex);
-            lock.unlock();
             std::this_thread::sleep_for(std::chrono::seconds(2));
-            lock.lock();
             convertirPedidosDeCarpeta("Procesados",prioridadAlta,prioridadMedia,prioridadBaja,clientes);
             //cout << "Thread breteando:  " << i++ << endl;
         }
@@ -77,6 +73,8 @@ Pedido * convertirAPedido(string _archivo){
     if(archivo.is_open()){
         Pedido * pedido = new Pedido();
         string cliente,linea;
+        pedido->movimientos->insertarAlFinal("En cola:\t" + getDateTime()+"\n");
+        std::this_thread::sleep_for(std::chrono::seconds(1));
         int codigo;
         getline(archivo,linea);
         codigo = stoi(linea);
@@ -107,6 +105,7 @@ void convertirPedidosDeCarpeta(string rutaCarpeta,ListaPedido * alta,ListaPedido
             pedidoTemporal = convertirAPedido(archivo.path().filename().string());
             if (pedidoTemporal != NULL){
                 if (clientes->getPrioridad(pedidoTemporal->codigoCliente) == 10){
+                    pedidoTemporal->movimientos->insertarAlFinal("En balanceador:\t" + getDateTime()+"\n");
                     media->encolar(pedidoTemporal);
                 }else if (clientes->getPrioridad(pedidoTemporal->codigoCliente) < 10){
                     baja->encolar(pedidoTemporal);

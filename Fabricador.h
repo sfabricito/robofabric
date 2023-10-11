@@ -4,9 +4,10 @@ struct RobotThread {
     std::thread thread; // El objeto thread
     bool pausado; // Variable de control para pausar el thread
     bool terminar; // Variable de control para terminar el thread
-    std::mutex mutex; // Mutex para la sincronización de pausa/reanudación
+    //std::mutex mutex; // Mutex para la sincronización de pausa/reanudación
     ListaProductoDePedido * productosAFabricar;
     ListaProducto * productos;
+    ListaString * historial;
     string categoria;
     bool prioridad;
     int id;
@@ -21,6 +22,7 @@ struct RobotThread {
         productos = _productos;
         productosAFabricar = _productosAFabricar;
         id = _id;
+        historial = new ListaString();
     }
 
     RobotThread() :  pausado(false), terminar(false) {
@@ -31,33 +33,30 @@ struct RobotThread {
         productos = NULL;
         productosAFabricar = NULL;
         id = 0;
+        historial = new ListaString();
     }
 
     // Función que será ejecutada por el thread
     void MiFuncion() {
         while (!terminar) {
             {
-                std::unique_lock<std::mutex> lock(mutex);
+                //std::unique_lock<std::mutex> lock(mutex);
                 while (pausado) {
                     // El thread está en pausa, espera
-                    lock.unlock();
+                    //lock.unlock();
                     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                    cout << "pausado" << endl;
-                    lock.lock();
+                    //cout << "pausado" << endl;
+                    //lock.lock();
                 }
             }
-            std::unique_lock<std::mutex> lock(mutex);
-            lock.unlock();
-            // Realiza alguna tarea aquí
             std::this_thread::sleep_for(std::chrono::seconds(1));
-            lock.lock();
-            cout << "hola como estan" << endl;
             if (productosAFabricar != NULL){
                 if(!productosAFabricar->isEmpty()){
                     if(productos->buscarProductoPorCodigo(productosAFabricar->peek()->producto->codigoProducto)->producto->categoria == categoria){
                         int duracion = productos->getDuracion(productosAFabricar->peek()->producto->codigoProducto);
                         int cantidad = productosAFabricar->peek()->producto->cantidadPedida;
                         std::this_thread::sleep_for(std::chrono::seconds(duracion*cantidad));
+                        historial->insertarAlFinal(productosAFabricar->peek()->producto->toString());
                         productos->buscarProductoPorCodigo(productosAFabricar->peek()->producto->codigoProducto)->producto->cantidadAlmacen += cantidad;
                         productosAFabricar->borrarAlInicio();
                         actualizarArchivoProductos(productos);

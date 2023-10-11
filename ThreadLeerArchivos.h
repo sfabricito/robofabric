@@ -5,7 +5,7 @@ struct threadLeerArchivo{//este thread lee los archivos
     bool running = false,paused = false;
     ListaProducto * productos;
     ListaCliente * clientes;
-    std::mutex mutex;
+    //std::mutex mutex;
 
     threadLeerArchivo(ListaProducto * l1, ListaCliente * l2) : thread(&threadLeerArchivo::operator(), this) {
         productos = l1;
@@ -15,12 +15,12 @@ struct threadLeerArchivo{//este thread lee los archivos
     void operator()() {
         while (!running) {
             {
-                std::unique_lock<std::mutex> lock(mutex);
+                //std::unique_lock<std::mutex> lock(mutex);
                 while (paused) {
                     // El thread está en pausa, espera
-                    lock.unlock();
+                    //lock.unlock();
                     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                    lock.lock();
+                    //lock.lock();
                 }
             }
 
