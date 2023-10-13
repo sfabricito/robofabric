@@ -1,4 +1,5 @@
 // Includes
+#include "Facturador.h"
 #include "iostream"
 
 using namespace std;
@@ -6,13 +7,12 @@ using namespace std;
 // Prototipos
 void imprimirBanner();
 void imprimirOpciones();
-void resolverOpciones();
-int pedirOpcion(string text);
-void imprimirClientes();
-void imprimirAlmacen();
-void menuPedidos();
-void imprimirPedidos();
-void agregarProducto();
+void imprimirClientes(ListaCliente * clientes);
+void imprimirAlmacen(ListaProducto * productos);
+void menuPedidos(ListaCliente * clientes, ListaProducto * productos, ListaPedido * prioridadAlta, ListaPedido * prioridadMedia, ListaPedido * prioridadBaja);
+void imprimirPedidos(ListaPedido * prioridadAlta, ListaPedido * prioridadMedia, ListaPedido * prioridadBaja);
+void imprimirPedido(ListaPedido * lista, string prioridad);
+void agregarPedido(ListaCliente * clientes, ListaProducto * productos, ListaPedido * lista);
 void menuBalanceador();
 void menuFabricadores();
 void imprimirFabricadores();
@@ -25,15 +25,23 @@ void imprimirEmpacador();
 void menuFacturador();
 void imprimirFacturador();
 
+void continuar();
+int pedirNumero(string text);
+string pedirString(string text);
 int verifyIntPositive(string number);
 double verifyDoublePositive(string number);
 
 // Funciones
 
-void menu(){
-    imprimirBanner();
-    imprimirOpciones();
-    resolverOpciones();
+void linea(){
+    cout << "---------------------------------------------------------------" << endl; 
+}
+
+void continuar(){
+    cout << "Presiona 'Enter' para continuar: ";
+    string input;
+    getline(cin, input);
+    linea();
 }
 
 void imprimirBanner(){
@@ -42,7 +50,7 @@ void imprimirBanner(){
     cout << "  / /_/ / / / / __  / / / / /_  / /| | / __  / /_/ // // /" << endl;
     cout << " / _, _/ /_/ / /_/ / /_/ / __/ / ___ |/ /_/ / _, _// // /___ " << endl;
     cout << "/_/ |_|\\____/_____/\\____/_/   /_/  |_/_____/_/ |_/___/\\____/" << endl; 
-    cout << "---------------------------------------------------------------" << endl;                                                                                              
+    linea();                                                                                            
 }
     
 void imprimirOpciones(){
@@ -57,92 +65,183 @@ void imprimirOpciones(){
     cout << " (9) Salir  " << endl;
 }
 
-void resolverOpciones(){
+void menu(ListaCliente * clientes, ListaProducto * productos, ListaPedido * prioridadAlta, ListaPedido * prioridadMedia, ListaPedido * prioridadBaja){
+    imprimirBanner();
     int opcion = 0;
     while (opcion != 9){
         imprimirOpciones();
-        opcion = pedirOpcion("Opcion deseada: ");
-            switch (opcion){
-                case 1:
-                    // Agregar codigo clientes
-                    imprimirClientes();
-                    break;
-                case 2:
-                    // Agregar codigo Productos
-                    imprimirAlmacen();
-                    break;
-                case 3:
-                    // Agregar codigo Pedidos
-                    menuPedidos();
-                    break;
-                case 4:
-                    // Balanceador
-                    menuBalanceador();
-                    break;
-                case 5:
-                    // Agregar codigo Fabricadores
-                    menuFabricadores();
-                    break;
-                case 6:
-                    // Agregar codigo Picking
-                    menuPicking();
-                    break;
-                case 7:
-                    // Agregar codigo Empacador
-                    menuEmpacador();
-                    break;
-                case 8:
-                    // Agregar codigo facturador
-                    menuFacturador();
-                    break;
-                case 9:
-                    return;
-            }
+        opcion = pedirNumero("Opción deseada: ");
+        switch (opcion){
+            case 1: // Clientes
+                imprimirClientes(clientes);
+                continuar();
+                break;
+            case 2: // Almacen (Productos)
+                imprimirAlmacen(productos);
+                continuar();
+                break;
+            case 3: // Pedidos
+                menuPedidos(clientes, productos, prioridadAlta, prioridadMedia, prioridadBaja);
+                break;
+            case 4:
+                // Balanceador
+                menuBalanceador();
+                break;
+            case 5:
+                // Agregar codigo Fabricadores
+                menuFabricadores();
+                break;
+            case 6:
+                // Agregar codigo Picking
+                menuPicking();
+                break;
+            case 7:
+                // Agregar codigo Empacador
+                menuEmpacador();
+                break;
+            case 8:
+                // Agregar codigo facturador
+                menuFacturador();
+                break;
+            case 9:
+                return;
+        }
     }
-
 }
 
 // Funciones para manejar opciones
-void imprimirClientes(){
-
+void imprimirClientes(ListaCliente * clientes){
+    if (clientes->isEmpty()){
+        linea();
+        cout << "No hay clientes registrados" << endl;
+    }
+    else {
+        NodoCliente * tmp = clientes->primerNodo;
+        while (tmp != NULL)
+        {
+            linea();
+            cout << "Código: " << tmp->cliente->codigo << endl;
+            cout << "Nombre: " << tmp->cliente->nombre << endl;
+            cout << "Prioridad: " << tmp->cliente->prioridad << endl;
+            tmp = tmp->sig; 
+        }
+    }
+    linea();
 }
 
-void imprimirAlmacen(){ // Imprimir productos
-
+void imprimirAlmacen(ListaProducto * productos){
+    if (productos->isEmpty()){
+        linea();
+        cout << "No hay productos en el Almacen" << endl;
+    }
+    else {
+        NodoProducto * tmp = productos->primerNodo;
+        while (tmp != NULL)
+        {
+            linea();
+            cout << "Código: " << tmp->producto->codigo << endl;
+            cout << "Cantidad Almacen: " << tmp->producto->cantidadAlmacen << endl;
+            cout << "Tiempo de Fabricación: " << tmp->producto->tiempoFabricacion << endl;
+            cout << "Categoría: " << tmp->producto->categoria << endl;
+            cout << "Ubicación Bodega: " << tmp->producto->categoria << endl;
+            tmp = tmp->siguiente; 
+        }
+    }
+    linea();
 }
 
-void menuPedidos(){
-    cout << " (1) Ver pedidos" << endl;
-    cout << " (2) Agregar pedido" << endl;
-    cout << " (3) Salir  " << endl;
+void menuPedidos(ListaCliente * clientes, ListaProducto * productos, ListaPedido * prioridadAlta, ListaPedido * prioridadMedia, ListaPedido * prioridadBaja){
     int opcion = 0;
     while (opcion != 3){
-        opcion = pedirOpcion("Opcion deseada: ");
-            switch (opcion){
-                case 1:
-                    // Ver pedidos
-                    imprimirPedidos();
-                    break;
-                case 2:
-                    // Agregar pedido
-                    agregarProducto();
-                    break;
-                case 3:
-                    return;
-                default:
-                    cout << "Esa opcion no esta disponible" << endl;
-            }
+        cout << " (1) Ver pedidos" << endl;
+        cout << " (2) Agregar pedido" << endl;
+        cout << " (3) Regresar al Menú Principal" << endl;
+        opcion = pedirNumero("Opción deseada: ");
+        switch (opcion){
+            case 1: // Imprimir Pedidos
+                imprimirPedidos(prioridadAlta, prioridadMedia, prioridadBaja);
+                continuar();
+                break;
+            case 2: // Agregar pedido
+                agregarPedido(clientes, productos, prioridadAlta);
+                break;
+            case 3:
+                return;
+            default:
+                cout << "Esa opcion no esta disponible" << endl;
+        }
+
     }
 }
 
-// TODO
-void imprimirPedidos(){
-
+void imprimirPedidos(ListaPedido * prioridadAlta, ListaPedido * prioridadMedia, ListaPedido * prioridadBaja){
+    if (prioridadAlta->isEmpty() && prioridadMedia->isEmpty() && prioridadBaja->isEmpty()){
+        linea();
+        cout << "No hay pedidos actualmente" << endl;
+    }
+    else {
+        imprimirPedido(prioridadAlta, "Alta");
+        imprimirPedido(prioridadMedia, "Media");
+        imprimirPedido(prioridadBaja, "Baja");
+    }
+    linea();
 }
 
-// TODO
-void agregarProducto(){
+void imprimirPedido(ListaPedido * lista, string prioridad){
+        NodoPedido * tmp = lista->primerNodo;
 
+        while (tmp != NULL)
+        {
+            linea();
+            cout << "Prioridad: " << prioridad << endl;
+            cout << "Número de Pedido: " << tmp->pedido->numeroPedido << endl;
+            cout << "Código Cliente:  " << tmp->pedido->codigoCliente << endl;
+            cout << "Productos del Pedido:" << endl;
+            NodoProductoDePedido * tmpProducto = tmp->pedido->productosPedidos->primerNodo;
+            while(tmpProducto != NULL){
+                cout << "Código Producto: " << tmpProducto->producto->codigoProducto << endl;
+                cout << "Cantidad Pedida: " << tmpProducto->producto->cantidadPedida << endl;
+                cout << "Cantidad Comprometida: " << tmpProducto->producto->cantidadComprometida << endl;
+                tmpProducto = tmpProducto->siguiente;
+            }
+            tmp = tmp->siguiente; 
+        }
+    linea();
+}
+
+void agregarPedido(ListaCliente * clientes, ListaProducto * productos, ListaPedido * lista){
+    int numeroPedido = -1;
+    while (numeroPedido <= 0){
+        //TODO validar que el pedido no existe
+        numeroPedido = pedirNumero("Número de Pedido: ");
+    }
+    string codigoCliente = pedirString("Código Cliente: ");
+    while(!clientes->buscarCliente(codigoCliente)){
+        cout << "Este cliente no existe" << endl;
+        codigoCliente = pedirString("Código Cliente: ");
+    }
+    Pedido * pedido = new Pedido(codigoCliente, numeroPedido);
+    bool agregarProducto = true;
+    while (agregarProducto){
+        string codigoProducto = pedirString("Código Producto: ");
+        while(productos->buscarProductoPorCodigo(codigoProducto) == NULL){
+            cout << "Este producto no existe" << endl;
+            codigoProducto = pedirString("Código Producto: ");
+        }
+        int cantidadPedida = -1;
+        while (cantidadPedida <= 0){
+            cantidadPedida = pedirNumero("Cantidad requerida: ");
+        }
+        pedido->agregarProducto(new ProductoDePedido(codigoProducto, cantidadPedida, 0, numeroPedido));
+
+        string seguirInsertando = pedirString("Agregar otro producto (Si o No): ");
+        agregarProducto = false;
+        if (seguirInsertando == "SI" || seguirInsertando == "Si" || seguirInsertando == "si"){
+            cout << "here" << endl;
+            agregarProducto = true;
+        }
+    }
+    lista->encolar(pedido);
 }
 
 void menuBalanceador(){
@@ -151,7 +250,7 @@ void menuBalanceador(){
     cout << " (3) Salir  " << endl;
     int opcion = 0;
     while (opcion != 3){
-        opcion = pedirOpcion("Opcion deseada: ");
+        opcion = pedirNumero("Opción deseada: ");
             switch (opcion){
                 case 1:
                     // Encender Balanceador
@@ -175,7 +274,7 @@ void menuFabricadores(){
     cout << " (5) Salir  " << endl;
     int opcion = 0;
     while (opcion != 5){
-        opcion = pedirOpcion("Opcion deseada: ");
+        opcion = pedirNumero("Opción deseada: ");
             switch (opcion){
                 case 1:
                     // Imprimir Fabricadores
@@ -217,7 +316,7 @@ void menuPicking(){
     cout << " (5) Salir  " << endl;
     int opcion = 0;
     while (opcion != 5){
-        opcion = pedirOpcion("Opcion deseada: ");
+        opcion = pedirNumero("Opción deseada: ");
             switch (opcion){
                 case 1:
                     // Imprimir Alistadores
@@ -258,7 +357,7 @@ void menuEmpacador(){
     cout << " (4) Salir  " << endl;
     int opcion = 0;
     while (opcion != 4){
-        opcion = pedirOpcion("Opcion deseada: ");
+        opcion = pedirNumero("Opción deseada: ");
             switch (opcion){
                 case 1:
                     // Imprimir Empacador
@@ -289,7 +388,7 @@ void menuFacturador(){
     cout << " (4) Salir  " << endl;
     int opcion = 0;
     while (opcion != 4){
-        opcion = pedirOpcion("Opcion deseada: ");
+        opcion = pedirNumero("Opción deseada: ");
             switch (opcion){
                 case 1:
                     // Imprimir Facturador
@@ -314,14 +413,21 @@ void imprimirFacturador(){
 }
 
 // Funciones secundarias
-int pedirOpcion(string text){
-    cout << endl << text;
+int pedirNumero(string text){
+    cout << text;
     string option;
     getline(cin, option);
     int numberVerified = verifyIntPositive(option); 
     if (numberVerified < 1)
-        return pedirOpcion(text);
+        return pedirNumero(text);
     return numberVerified;
+}
+
+string pedirString(string text){
+    cout << text;
+    string option;
+    getline(cin, option);
+    return option;
 }
 
 int verifyIntPositive(string number){

@@ -335,6 +335,16 @@ struct ListaPedido{//esto va a servir como las colas de nuestros pedidos
             tmp = tmp->siguiente;
         }
     }
+
+    NodoPedido * buscarPedidoPorNumero(int numero){
+        NodoPedido * tmp = primerNodo;
+        while (tmp != NULL){
+            if (tmp->pedido->numeroPedido == numero)
+                return tmp;
+            tmp = tmp->siguiente;
+        }
+        return NULL;
+    }
 };
 
 vector<string> separarProductoDePedido(string cadena){

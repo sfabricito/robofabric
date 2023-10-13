@@ -1,5 +1,5 @@
 
-#include "Facturador.h"
+#include "menu.h"
 
 int main(){
     ListaCliente * clientes = new ListaCliente();
@@ -21,7 +21,7 @@ int main(){
     // //Terminar el thread
     // //myThread.Terminar();
 
-
+    
     //---------------------THREAD CONVERTIR A PEDIDOS
     ThreadConvertirPedido thread1(clientes,alta,media,baja);
     thread1.Reanudar();
@@ -125,6 +125,6 @@ int main(){
     // // cout << getDateTime() << endl;
     // // ofstream archivo("Facturados//"+getDateTime()+".txt");
     // // archivo<<"hola";
-
+    menu(clientes, productos, alta, media, baja);
     return 0;
 } 
