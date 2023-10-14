@@ -33,7 +33,6 @@ struct ThreadBalanceador{
             }
             // Realiza alguna tarea aquí
             std::this_thread::sleep_for(std::chrono::seconds(1));
-            cout << "que paso" << endl;
             if (!prioridadAlta->isEmpty()){
                 prioridadAlta->peek()->pedido->ajustarPedido(productos);
                 if(prioridadAlta->peek()->pedido->isPedidoCompleto()){
@@ -100,9 +99,7 @@ struct ThreadBalanceador{
                     prioridadBaja->encolar(nuevo);
                 }
             }
-            //cout << "Thread breteando:  " << i++ << endl;
         }
-        //std::cout << "Thread ha terminado." << std::endl;
     }
 
     // Función para pausar el thread

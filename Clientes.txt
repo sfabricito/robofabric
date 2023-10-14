@@ -1,4 +1,6 @@
+1	1	1
 sumama	sumama S.A	2
 001	beto	1
 02	hola S.A	10
 0	hola	7
+002	Fabricio	10
