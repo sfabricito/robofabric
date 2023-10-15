@@ -1,0 +1,46 @@
+
+----------------------------------------------------
+Bitácora Balanceador
+----------------------------------------------------
+No hay registros.
+----------------------------------------------------
+Bitácora Fabricadores
+----------------------------------------------------
+No hay registros del fabricador con ID:1.
+----------------------------------------------------
+No hay registros del fabricador con ID:2.
+----------------------------------------------------
+No hay registros del fabricador con ID:3.
+----------------------------------------------------
+No hay registros del fabricador con ID:4.
+----------------------------------------------------
+No hay registros del fabricador con ID:5.
+----------------------------------------------------
+No hay registros del fabricador con ID:6.
+----------------------------------------------------
+No hay registros del fabricador con ID:7.
+----------------------------------------------------
+No hay registros del fabricador con ID:8.
+----------------------------------------------------
+No hay registros del fabricador con ID:9.
+----------------------------------------------------
+No hay registros del fabricador con ID:10.
+----------------------------------------------------
+Bitácora Alistadores
+----------------------------------------------------
+No hay registros del alistador con ID:1.
+----------------------------------------------------
+No hay registros del alistador con ID:2.
+----------------------------------------------------
+No hay registros del alistador con ID:3.
+----------------------------------------------------
+No hay registros del alistador con ID:4.
+----------------------------------------------------
+No hay registros del alistador con ID:5.
+----------------------------------------------------
+No hay registros del alistador con ID:6.
+----------------------------------------------------
+Bitácora Empacador
+----------------------------------------------------
+No hay registros.
+----------------------------------------------------

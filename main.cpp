@@ -56,15 +56,7 @@ int main(){
     }
     
     menu(clientes, productos, alta, media, baja, threadBalanceador, empacador, facturador, robots, picking);
-
-    // Terminar Hilos
     threadLeerArchivos->Terminar();
     threadConvertirPedido->Terminar();
-    threadBalanceador->Terminar();
-    empacador->Terminar();
-    facturador->Terminar();
-    for (int i = 0; i < 10; i++)
-        robots[i]->Terminar();
-    picking->Terminar();
     return 0;
 } 

@@ -29,6 +29,7 @@ void menuAlistador(AlistadorThread * alistador);
 void menuEmpacador(Empacador * empacador);
 void imprimirPedidoAEmpacar(ListaPedido * alistados);
 void menuFacturador(Facturador * facturador);
+void crearBitacora(ListaString * listaBalanceador, RobotThread * fabricadores[], ListaString * listaEmpacador, AlistadorThread * alistadores[]);
 
 void continuar();
 int pedirNumero(string text);
@@ -121,6 +122,21 @@ void menu(ListaCliente * clientes, ListaProducto * productos, ListaPedido * prio
                 menuFacturador(facturador);
                 break;
             case 9:
+                crearBitacora(balanceador->historial, robots, empacador->historial, picking->alistadores);
+                cout << "Bitácora Creada." << endl;
+                // Terminar Hilos
+                balanceador->Terminar();
+                cout << "Balanceador: " << textoRojo("Apagado") << endl;
+                for (int i = 0; i < 10; i++)
+                    robots[i]->Terminar();
+                cout << "Fabricadores: " << textoRojo("Apagado") << endl;
+                picking->Terminar();
+                cout << "Área de Picking: " << textoRojo("Apagada") << endl;
+                empacador->Terminar();
+                cout << "Empacador: " << textoRojo("Apagado") << endl;
+                facturador->Terminar();
+                cout << "Facturador: " << textoRojo("Apagado") << endl;
+                
                 return;
         }
         limpiarConsola();
@@ -747,6 +763,63 @@ void imprimirPedidoAFacturar(ListaPedido * lista){
 }
 
 // Funciones secundarias
+void crearBitacora(ListaString * listaBalanceador, RobotThread * fabricadores[], ListaString * listaEmpacador, AlistadorThread * alistadores[]){
+	ofstream archivo("Bitacora.txt");
+    string informacion;
+    string divisor = "\n----------------------------------------------------\n";
+
+    NodoString * tmp = listaBalanceador->primerNodo;
+    informacion += divisor + "Bitácora Balanceador" + divisor;
+    if (tmp == NULL)
+        informacion += "No hay registros.";
+    else
+        while (tmp != NULL){
+            informacion += tmp->dato;
+            tmp = tmp->siguiente;
+        }
+    informacion += divisor;
+
+    informacion += "Bitácora Fabricadores" + divisor;
+    for (int i = 0; i < 10; i++){
+        tmp = fabricadores[i]->historial->primerNodo;
+        if (tmp == NULL)
+            informacion +=  "No hay registros del fabricador con ID:" + to_string(fabricadores[i]->id) + "." + divisor;
+        else
+            while (tmp != NULL){
+                informacion += tmp->dato;
+                tmp = tmp->siguiente;
+                informacion += divisor;
+            }
+    }
+
+    informacion += "Bitácora Alistadores" + divisor;
+    for (int i = 0; i < 6; i++){
+        tmp = alistadores[i]->historial->primerNodo;
+        if (tmp == NULL)
+            informacion += "No hay registros del alistador con ID:" + to_string(alistadores[i]->id) + "." + divisor;
+        else
+            while (tmp != NULL){
+                informacion += tmp->dato;
+                tmp = tmp->siguiente;
+            informacion += divisor;
+            }
+    }
+    
+    tmp = listaEmpacador->primerNodo;
+    informacion += "Bitácora Empacador" + divisor;
+    if (tmp == NULL)
+        informacion += "No hay registros.";
+    else
+        while (tmp != NULL){
+            informacion += tmp->dato;
+            tmp = tmp->siguiente;
+        }
+    informacion += divisor;
+    
+    archivo << informacion;
+	archivo.close();
+}
+
 int pedirNumero(string text){
     cout << text;
     string option;

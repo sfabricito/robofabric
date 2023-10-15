@@ -60,6 +60,7 @@ struct Empacador{
     // Función para terminar el thread
     void Terminar() {
         terminar = true;
+        pausado = false;
         if (thread.joinable()) {
             thread.join();
         }

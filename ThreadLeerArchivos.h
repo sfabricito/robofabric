@@ -29,7 +29,7 @@ struct threadLeerArchivo{//este thread lee los archivos
             leerArchivosEnCarpeta("Pedidos",clientes,productos);
             //cout << "Thread breteando leer :  " << i++ << endl;
         }
-        std::cout << "Thread ha terminado." << std::endl;
+        //std::cout << "Thread ha terminado." << std::endl;
     }
 
     

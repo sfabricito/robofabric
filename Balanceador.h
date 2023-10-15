@@ -116,6 +116,7 @@ struct ThreadBalanceador{
     // Función para terminar el thread
     void Terminar() {
         running = true;
+        paused = false;
         if (thread.joinable()) {
             thread.join();
         }
