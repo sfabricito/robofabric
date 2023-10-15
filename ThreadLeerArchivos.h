@@ -66,7 +66,7 @@ struct threadLeerArchivo{//este thread lee los archivos
 void leerArchivosEnCarpeta(string rutaCarpeta,ListaCliente * clientes,ListaProducto * productos) {
     for (const auto& archivo : fs::directory_iterator(rutaCarpeta)) {
         if (fs::is_regular_file(archivo)) {
-            cout << archivo.path().filename().string() << endl;
+            //cout << archivo.path().filename().string() << endl;
             revisarPedido(archivo.path().filename().string(),clientes,productos);
         }
     }

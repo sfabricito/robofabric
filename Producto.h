@@ -176,9 +176,7 @@ struct ListaProducto{
             tmp = tmp->siguiente;
         }
         return -1;
-    }
-
-    
+    } 
 };
 
 Producto * separarProductoCadena(string cadena){

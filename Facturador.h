@@ -36,12 +36,12 @@ struct Facturador{
             // Realiza alguna tarea aquí
             std::this_thread::sleep_for(std::chrono::seconds(1));
             if (!pedidosParaFacturar->isEmpty()){
-                cout << "HAY ALGO PARA FACTURAR" << endl;
+                //cout << "HAY ALGO PARA FACTURAR" << endl;
                 Pedido * pedidoTmp = pedidosParaFacturar->peek()->pedido;
                 string ruta ="",infoPedido="";
                 ruta += "Facturados//"+to_string( pedidoTmp->numeroPedido)+"_"+pedidoTmp->codigoCliente+"_";
                 ruta += getDateTime()+".txt";
-                cout << ruta << endl;
+                //cout << ruta << endl;
                 infoPedido += pedidoTmp->movimientos->getInfo();
                 infoPedido += pedidoTmp->procesosDeRobots->getInfo();
                 ofstream archivo(ruta.c_str());

@@ -36,7 +36,7 @@ struct Empacador{
             // Realiza alguna tarea aquí
             std::this_thread::sleep_for(std::chrono::seconds(1));
             if(!alistados->isEmpty()){
-                cout << "QUE PASA AQUI: " << alistados->peek()->pedido->getCantidadDePedidos() << endl;
+                //cout << "QUE PASA AQUI: " << alistados->peek()->pedido->getCantidadDePedidos() << endl;
                 std::this_thread::sleep_for(std::chrono::seconds(alistados->peek()->pedido->getCantidadDePedidos()));
                 NodoPedido * nuevo = alistados->desencolar();
                 historial->insertarAlFinal(nuevo->pedido->toString());

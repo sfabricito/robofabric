@@ -17,15 +17,18 @@ void imprimirPedido(ListaPedido * lista, string prioridad);
 void agregarPedido(ListaCliente * clientes, ListaProducto * productos, ListaPedido * lista);
 void menuBalanceador(ThreadBalanceador * balanceador);
 void menuFabricadores(RobotThread * robots[]);
+void imprimirProductosAFabricar(ListaProducto * productos ,ListaProductoDePedido * productosAFabricar);
 void imprimirFabricadores(RobotThread * robots[]);
 void menuFabricador(RobotThread * robots[], int id);
-void menuPicking();
-void imprimirAlistadores();
-void imprimirAlistador();
+void imprimirPedidoAFacturar(ListaPedido * lista);
+void menuPicking(PickingThread * picking);
+void imprimirProductosAAlistar(PickingThread * picking);
+void imprimirAlistadores(PickingThread * picking);
+void imprimirListaEsperaAlistadores(ListaAlistadorThread * lista);
+void menuAlistador(AlistadorThread * alistador);
 void menuEmpacador(Empacador * empacador);
-void imprimirEmpacador();
+void imprimirPedidoAEmpacar(ListaPedido * alistados);
 void menuFacturador(Facturador * facturador);
-void imprimirFacturador();
 
 void continuar();
 int pedirNumero(string text);
@@ -72,14 +75,14 @@ void imprimirOpciones(){
     cout << " (2) Productos" << endl;
     cout << " (3) Pedidos" << endl;
     cout << " (4) Balanceador" << endl;
-    //cout << " (5) Fabricadores" << endl;
-    //cout << " (6) Picking" << endl;
+    cout << " (5) Fabricadores" << endl;
+    cout << " (6) Picking" << endl;
     cout << " (7) Empacador" << endl;
     cout << " (8) Facturador" << endl;
     cout << " (9) Salir  " << endl;
 }
 
-void menu(ListaCliente * clientes, ListaProducto * productos, ListaPedido * prioridadAlta, ListaPedido * prioridadMedia, ListaPedido * prioridadBaja, ThreadBalanceador * balanceador, Empacador * empacador, Facturador * facturador, RobotThread * robots[]){
+void menu(ListaCliente * clientes, ListaProducto * productos, ListaPedido * prioridadAlta, ListaPedido * prioridadMedia, ListaPedido * prioridadBaja, ThreadBalanceador * balanceador, Empacador * empacador, Facturador * facturador, RobotThread * robots[], PickingThread * picking){
     imprimirBanner();
     int opcion = 0;
     while (opcion != 9){
@@ -107,7 +110,7 @@ void menu(ListaCliente * clientes, ListaProducto * productos, ListaPedido * prio
                 menuFabricadores(robots);
                 break;
             case 6: // Picking
-                menuPicking();
+                menuPicking(picking);
                 break;
             case 7:
                 // Agregar codigo Empacador
@@ -347,21 +350,28 @@ void menuBalanceador(ThreadBalanceador * balanceador){
 
 void menuFabricadores(RobotThread * robots[]){
     int opcion = 0;
-    while (opcion != 3){
+    while (opcion != 4){
         limpiarConsola();
         cout << textoAzul("Menú Fabricadores") << endl;
-        cout << " (1) Ver Fabricadores" << endl;
-        cout << " (2) Seleccionar Fabricador" << endl;
-        cout << " (3) Regresar al Menú Principal  " << endl;
+        cout << " (1) Productos a fabricar" << endl;
+        cout << " (2) Ver Fabricadores" << endl;
+        cout << " (3) Seleccionar Fabricador" << endl;
+        cout << " (4) Regresar al Menú Principal  " << endl;
         opcion = pedirNumero("Opción deseada: ");
         switch (opcion){
-            case 1: // Imprimir Fabricadores
+            case 1:
+                limpiarConsola();
+                cout << textoAzul("Productos a Fabricar") << endl;
+                imprimirProductosAFabricar(robots[0]->productos ,robots[0]->productosAFabricar);
+                continuar();
+                break;
+            case 2: // Imprimir Fabricadores
                 limpiarConsola();
                 cout << textoAzul("Fabricadores") << endl;
                 imprimirFabricadores(robots);
                 continuar();
                 break;
-            case 2:{
+            case 3:{
                 int robotId = pedirNumero("ID Robot: ");
                 while (!(robotId > 0 && robotId < 11 )){
                     cout << "ID Inválido" << endl;
@@ -370,12 +380,32 @@ void menuFabricadores(RobotThread * robots[]){
                 menuFabricador(robots, robotId-1);
                 break;
             }
-            case 3:
+            case 4:
                 return;
             default:
                 cout << "Esa opcion no esta disponible" << endl;
         }
     }
+}
+
+void imprimirProductosAFabricar(ListaProducto * productos ,ListaProductoDePedido * productosAFabricar){
+    NodoProductoDePedido * tmp = productosAFabricar->primerNodo;
+    if(tmp == NULL){
+        cout << "No hay productos a fabricar" << endl;
+        return;
+    }
+    while (tmp != NULL)
+    {
+        Producto * productoAFabricar = productos->buscarProductoPorCodigo(tmp->producto->codigoProducto)->producto;
+        linea();
+        cout << "Código: " << productoAFabricar->codigo << endl;
+        cout << "Cantidad Almacen: " << productoAFabricar->cantidadAlmacen << endl;
+        cout << "Cantidad Pedida: " << tmp->producto->cantidadPedida << endl;
+        cout << "Tiempo de Fabricación: " << productoAFabricar->tiempoFabricacion << endl;
+        cout << "Categoría: " << productoAFabricar->categoria << endl;
+        tmp = tmp->siguiente; 
+    }
+    linea();
 }
 
 void imprimirFabricadores(RobotThread * robots[]){
@@ -396,6 +426,12 @@ void imprimirFabricadores(RobotThread * robots[]){
             cout << "Categoría: Todas" << endl;
         else
             cout << "Categoría: " << robots[i]->categoria << endl;
+        if(robots[i]->historial->isEmpty())
+            cout << "Historial: " << textoRojo("Sin historial") << endl;
+        else {
+            cout << "Historial: " << endl;
+            robots[i]->historial->imprimir();
+        }
     }
     linea();
 }
@@ -419,7 +455,7 @@ void menuFabricador(RobotThread * robots[], int id){
             cout << "Categoría: Todas" << endl;
         else
             cout << "Categoría: " << robots[id]->categoria << endl;
-        cout << " (1) Cambiar Tipo" << endl;
+        cout << " (1) Cambiar Categoría" << endl;
         cout << " (2) Cambiar Prioridad" << endl;
         cout << " (3) Encender Fabricador" << endl;
         cout << " (4) Apagar Fabricador" << endl;
@@ -427,10 +463,7 @@ void menuFabricador(RobotThread * robots[], int id){
         opcion = pedirNumero("Opción deseada: ");
         switch (opcion){
             case 1:{
-                cout << "  (A)" << endl;
-                cout << "  (B)" << endl;
-                cout << "  (C)" << endl;
-                cout << "  (D): Todos" << endl;
+                cout << " (A): Categoría A\n (B): Categoría B\n (C): Categoría C\n (D): Todas las categorías" << endl;
                 string tipo = pedirString("Ingrese la categoría: ");
                 while(tipo != "A" && tipo != "B" && tipo != "C" && tipo != "D"){
                     tipo = pedirString("Ingrese el Tipo: ");
@@ -455,51 +488,144 @@ void menuFabricador(RobotThread * robots[], int id){
     }
 }
 
-void menuPicking(){
-    cout << " (1) Ver Alistadores" << endl;
-    cout << " (2) Ver Alistador especifico" << endl;
-    cout << " (3) Encender un Alistador" << endl;
-    cout << " (4) Apagar un Alistador" << endl;
-    cout << " (5) Regresar al Menú Principal  " << endl;
+void menuPicking(PickingThread * picking){
     int opcion = 0;
     while (opcion != 5){
+        limpiarConsola();
+        cout << textoAzul("Menú Picking") << endl;
+        cout << " (1) Productos a alistar" << endl;
+        cout << " (2) Ver Alistadores" << endl;
+        cout << " (3) Ver lista de espera" << endl;
+        cout << " (4) Seleccionar Alistador" << endl;
+        cout << " (5) Regresar al Menú Principal  " << endl;
         opcion = pedirNumero("Opción deseada: ");
-            switch (opcion){
-                case 1:
-                    // Imprimir Alistadores
-                    imprimirAlistadores();
-                    break;
-                case 2:
-                    // Imprimir Alistador
-                    imprimirAlistador();
-                    break;
-                case 3:
-                    // Encender un alistador
-                    return;
-                case 4:
-                    // Apagar un alistador
-                    break;
-                case 5:
-                    return;
-                default:
-                    cout << "Esa opcion no esta disponible" << endl;
+        switch (opcion){
+            case 1:
+                limpiarConsola();
+                cout << textoAzul("Productos a Alistar") << endl;
+                imprimirProductosAAlistar(picking);
+                continuar();
+                break;
+            case 2:
+                limpiarConsola();
+                cout << textoAzul("Alistadores") << endl;
+                imprimirAlistadores(picking);
+                continuar();
+                break;
+            case 3: // Imprimir Alistadores
+                limpiarConsola();
+                cout << textoAzul("Lista espera Alistadores") << endl;
+                imprimirListaEsperaAlistadores(picking->filaAlistadores);
+                continuar();
+                break;
+            case 4:{
+                int alistadorId = pedirNumero("ID Alistador: ");
+                while (!(alistadorId > 0 && alistadorId < 7 )){
+                    cout << "ID Inválido" << endl;
+                    alistadorId = pedirNumero("ID Alistador: ");
+                }
+                menuAlistador(picking->alistadores[alistadorId]);
+                break;
             }
+            case 5:
+                return;
+            default:
+                cout << "Esa opcion no esta disponible" << endl;
+        }
     }
 }
 
-// TODO
-void imprimirAlistadores(){
-
+void imprimirProductosAAlistar(PickingThread * picking){
+    NodoPedido * tmp = picking->productosParaPicking->primerNodo;
+    if (tmp == NULL){
+        cout << "No hay productos a alistar" << endl;
+        return;
+    } 
+    while (tmp != NULL)
+    {
+        linea();
+        cout << "Número de Pedido: " << tmp->pedido->numeroPedido << endl;
+        cout << "Código Cliente:  " << tmp->pedido->codigoCliente << endl;
+        cout << "Productos del Pedido:" << endl;
+        NodoProductoDePedido * tmpProducto = tmp->pedido->productosPedidos->primerNodo;
+        while(tmpProducto != NULL){
+            cout << "   Código Producto: " << tmpProducto->producto->codigoProducto << endl;
+            cout << "   Cantidad Pedida: " << tmpProducto->producto->cantidadPedida << endl;
+            cout << "   Cantidad Comprometida: " << tmpProducto->producto->cantidadComprometida << endl;
+            if (tmpProducto->siguiente != NULL)
+                cout << endl;
+            tmpProducto = tmpProducto->siguiente;
+        }
+        tmp = tmp->siguiente; 
+    }
+    linea();
 }
 
-// TODO
-void imprimirAlistador(){
+void imprimirAlistadores(PickingThread * picking){
+    for (int i = 0; i < 6; i++){
+        linea();
+        cout << "ID: " << picking->alistadores[i]->id << endl;
+        if(!picking->alistadores[i]->pausado)
+            cout << "Estado: " << textoVerde("Encendido") << endl;
+        else
+            cout << "Estado: " << textoRojo("Apagado") << endl;
+        if(picking->alistadores[i]->historial->isEmpty())
+            cout << "Historial: " << textoRojo("Sin historial") << endl;
+        else {
+            cout << "Historial: " << endl;
+            picking->alistadores[i]->historial->imprimir();
+        }
+    }
+    linea();
+}
 
+void imprimirListaEsperaAlistadores(ListaAlistadorThread * lista){
+    NodoAlistadorThread * tmp = lista->primerNodo;
+    int contador = 1;
+    while (tmp != NULL)
+    {
+        linea();
+        cout << "Posición: " << contador++ << endl;
+        cout << "ID: " << tmp->alistador->id << endl;
+        tmp = tmp->siguiente;
+    }
+    linea();
+    
+}
+
+void menuAlistador(AlistadorThread * alistador){
+    int opcion = 0;
+    while (opcion != 3){
+        limpiarConsola();
+        cout << textoAzul("Menú Alistador") << endl;
+        cout << "Estado: ";
+        if (alistador->pausado)
+            cout << textoRojo("Apagado") << endl;
+        else
+            cout << textoVerde("Encendido") << endl;
+        cout << " (1) Encender Alistador" << endl;
+        cout << " (2) Apagar Alistador" << endl;
+        cout << " (3) Regresar al Menú Principal  " << endl;
+        opcion = pedirNumero("Opción deseada: ");
+        switch (opcion){
+            case 1: // Encender Alistador
+                alistador->Reanudar();
+                break;
+            case 2: // Apagar Alistador
+                alistador->Pausar();
+                break;
+            case 3:
+                return;
+            default:
+                cout << "Esa opcion no esta disponible" << endl;
+                continuar();
+        }
+    }
 }
 
 void menuEmpacador(Empacador * empacador){
     int opcion = 0;
-    while (opcion != 3){
+    while (opcion != 4){
         limpiarConsola();
         cout << textoAzul("Menú Empacador") << endl;
         cout << "Estado: ";
@@ -507,18 +633,24 @@ void menuEmpacador(Empacador * empacador){
             cout << textoRojo("Apagado") << endl;
         else
             cout << textoVerde("Encendido") << endl;
-        cout << " (1) Encender Empacador" << endl;
-        cout << " (2) Apagar Empacador" << endl;
-        cout << " (3) Regresar al Menú Principal  " << endl;
+        cout << " (1) Imprimir pedidos a Empacar" << endl;
+        cout << " (2) Encender Empacador" << endl;
+        cout << " (3) Apagar Empacador" << endl;
+        cout << " (4) Regresar al Menú Principal  " << endl;
         opcion = pedirNumero("Opción deseada: ");
         switch (opcion){
-            case 1: // Encender Empacador
+            case 1:
+                limpiarConsola();
+                imprimirPedidoAEmpacar(empacador->alistados);
+                continuar();
+                break;
+            case 2: // Encender Empacador
                 empacador->Reanudar();
                 break;
-            case 2: // Apagar Empacador
+            case 3: // Apagar Empacador
                 empacador->Pausar();
                 break;
-            case 3:
+            case 4:
                 return;
             default:
                 cout << "Esa opcion no esta disponible" << endl;
@@ -527,13 +659,34 @@ void menuEmpacador(Empacador * empacador){
     }
 }
 
-void imprimirEmpacador(){
-
+void imprimirPedidoAEmpacar(ListaPedido * alistados){
+    NodoPedido * tmp = alistados->primerNodo;
+    if(tmp == NULL){
+        cout << "No hay Pedidos a Empacar" << endl;
+        return;
+    }
+    while (tmp != NULL)
+    {
+        linea();
+        cout << "Número de Pedido: " << tmp->pedido->numeroPedido << endl;
+        cout << "Código Cliente:  " << tmp->pedido->codigoCliente << endl;
+        cout << "Productos del Pedido:" << endl;
+        NodoProductoDePedido * tmpProducto = tmp->pedido->productosPedidos->primerNodo;
+        while(tmpProducto != NULL){
+            cout << "   Código Producto: " << tmpProducto->producto->codigoProducto << endl;
+            cout << "   Cantidad Pedida: " << tmpProducto->producto->cantidadPedida << endl;
+            if (tmpProducto->siguiente != NULL)
+                cout << endl;
+            tmpProducto = tmpProducto->siguiente;
+        }
+        tmp = tmp->siguiente; 
+    }
+    linea();
 }
 
 void menuFacturador(Facturador * facturador){
     int opcion = 0;
-    while (opcion != 3){
+    while (opcion != 4){
         limpiarConsola();
         cout << textoAzul("Menú Facturador") << endl;
         cout << "Estado: ";
@@ -541,18 +694,25 @@ void menuFacturador(Facturador * facturador){
             cout << textoRojo("Apagado") << endl;
         else
             cout << textoVerde("Encendido") << endl;
-        cout << " (1) Encender Facturador" << endl;
-        cout << " (2) Apagar Facturador" << endl;
-        cout << " (3) Regresar al Menú Principal  " << endl;
+        cout << " (1) Pedidos a facturar" << endl;
+        cout << " (2) Encender Facturador" << endl;
+        cout << " (3) Apagar Facturador" << endl;
+        cout << " (4) Regresar al Menú Principal  " << endl;
         opcion = pedirNumero("Opción deseada: ");
         switch (opcion){
-            case 1: // Encender Facturador
+            case 1:
+                limpiarConsola();
+                cout << textoAzul("Pedidos a facturar") << endl;
+                imprimirPedidoAFacturar(facturador->pedidosParaFacturar);
+                continuar();
+                break;
+            case 2: // Encender Facturador
                 facturador->Reanudar();
                 break;
-            case 2: // Apagar Facturador
+            case 3: // Apagar Facturador
                 facturador->Pausar();
                 break;
-            case 3:
+            case 4:
                 return;
             default:
                 cout << "Esa opcion no esta disponible" << endl;
@@ -561,8 +721,29 @@ void menuFacturador(Facturador * facturador){
     }
 }
 
-void imprimirFacturador(){
-
+void imprimirPedidoAFacturar(ListaPedido * lista){
+    NodoPedido * tmp = lista->primerNodo;
+    if(tmp == NULL){
+        cout << "No hay Pedidas a facturar" << endl;
+        return;
+    }
+    while (tmp != NULL)
+    {
+        linea();
+        cout << "Número de Pedido: " << tmp->pedido->numeroPedido << endl;
+        cout << "Código Cliente:  " << tmp->pedido->codigoCliente << endl;
+        cout << "Productos del Pedido:" << endl;
+        NodoProductoDePedido * tmpProducto = tmp->pedido->productosPedidos->primerNodo;
+        while(tmpProducto != NULL){
+            cout << "   Código Producto: " << tmpProducto->producto->codigoProducto << endl;
+            cout << "   Cantidad Pedida: " << tmpProducto->producto->cantidadPedida << endl;
+            if (tmpProducto->siguiente != NULL)
+                cout << endl;
+            tmpProducto = tmpProducto->siguiente;
+        }
+        tmp = tmp->siguiente; 
+    }
+    linea();
 }
 
 // Funciones secundarias
