@@ -57,6 +57,6 @@ int main(){
     
     menu(clientes, productos, alta, media, baja, threadBalanceador, empacador, facturador, robots, picking);
     threadLeerArchivos->Terminar();
-    threadConvertirPedido->Terminar();
+    threadConvertirPedido->Terminar();  
     return 0;
 } 
